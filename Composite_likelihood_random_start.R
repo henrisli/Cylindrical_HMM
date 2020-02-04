@@ -162,7 +162,7 @@ optimal = optim(1,loglikelihood, lower = 0, method = "Brent", upper = 2*log(1+sq
 beta = optimal$par
 
 
-ncolor = 3
+ncolor = 2
 # Initialize parameters
 rho_list = list(0.5)
 #rho_list = list(rho)
@@ -219,6 +219,7 @@ dabeley_reparam <- function(param, x){
 }
 
 
+
 theta_function = function(xi_probs_i_est_and_sample, theta_val){
   theta_val = matrix(theta_val, nrow = ncolor)
   #value = 0
@@ -229,12 +230,63 @@ theta_function = function(xi_probs_i_est_and_sample, theta_val){
   #  value = value + sum(xi_probs_i_est_and_sample[k,1:ncolor]*log(apply(theta_val, 1, dabeley_reparam, x=simulated_sample[k,])))
   #}
   value = -sum(apply(xi_probs_i_est_and_sample, 1, function(i) i[1:ncolor]%*%log(apply(theta_val, 1, dabeley_reparam, x = i[(ncolor+1):(ncolor+2)]))), na.rm=T)
+  if(is.na(value)){return(10000000)}
   if (value<=0.000){return(10000000)}else{return(value)}
   #return(-value)
 }
 
+full_likelihood = function(parameter){
+  rho_val = parameter[5*ncolor+1]
+  theta_val = matrix(parameter[1:(5*ncolor)], nrow=ncolor)
+  potts_prob = apply(xi_A, 1, function(i) exp(rho_val*ifelse(i[1]==i[2],1,0)))
+  potts_prob = potts_prob/sum(potts_prob)
+  value = 0
+  for (i in 1:A){
+    temp = 0
+    #value = value + log(potts_prob%*%apply(xi_A, 1, function(j) dabeley_reparam(theta_val[j[1],], as.vector(simulated_sample[A_list[[i]][1],]))*dabeley_reparam(theta_val[j[2],], as.vector(simulated_sample[A_list[[i]][2],]))))
+    for (j in 1:ncolor^2){
+      temp = temp + potts_prob[j]*dabeley_reparam(theta_val[xi_A[j,1],], as.vector(simulated_sample[A_list[[i]][1],]))*dabeley_reparam(theta_val[xi_A[j,2],], as.vector(simulated_sample[A_list[[i]][2],]))
+    }
+    value = value + log(temp)
+  }
+  return(-value)
+}
+
+
+full_likelihood_rho_only = function(rho_val, parameter){
+  theta_val = matrix(parameter[1:(5*ncolor)], nrow=ncolor)
+  potts_prob = apply(xi_A, 1, function(i) exp(1/rho_val*ifelse(i[1]==i[2],1,0)))
+  potts_prob = potts_prob/sum(potts_prob)
+  value = 0
+  for (i in 1:A){
+    temp = 0
+    for (j in 1:ncolor^2){
+      temp = temp + potts_prob[j]*dabeley_reparam(theta_val[xi_A[j,1],], as.vector(simulated_sample[A_list[[i]][1],]))*dabeley_reparam(theta_val[xi_A[j,2],], as.vector(simulated_sample[A_list[[i]][2],]))
+    }
+    value = value + log(temp)
+  }
+  return(-value)
+}
+
+full_likelihood_hess = function(parameter){
+  rho_val = parameter[5*ncolor+1]
+  theta_val = matrix(parameter[1:(5*ncolor)], nrow=ncolor)
+  potts_prob = apply(xi_A, 1, function(i) exp(rho_val*ifelse(i[1]==i[2],1,0)))
+  potts_prob = potts_prob/sum(potts_prob)
+  value = 0
+  for (i in 1:A){
+    #temp = 0
+    for (j in 1:ncolor^2){
+      value = value + log(potts_prob[j]*dabeley_reparam(theta_val[xi_A[j,1],], as.vector(simulated_sample[A_list[[i]][1],]))*dabeley_reparam(theta_val[xi_A[j,2],], as.vector(simulated_sample[A_list[[i]][2],])))
+      #temp = temp + potts_prob[j]*dabeley_reparam(theta_val[xi_A[j,1],], as.vector(simulated_sample[A_list[[i]][1],]))*dabeley_reparam(theta_val[xi_A[j,2],], as.vector(simulated_sample[A_list[[i]][2],]))
+    }
+    #value = value + log(temp)
+  }
+  return(-value)
+}
+
 gradient_1 = function(param, x){
-  return(1+exp(param[1])*(param[2] + log(x[4]))*(1-(exp(param[2])*x[4])^(exp(param[1]))*(1-tanh(exp(param[4]))*cos(x[5]-2*atan(param[3])))))
+  return(1+exp(param[1])*(param[2] + log(x[ncolor+1]))*(1-(exp(param[2])*x[ncolor+1])^(exp(param[1]))*(1-tanh(exp(param[ncolor+1]))*cos(x[ncolor+2]-2*atan(param[3])))))
 }
 
 gradient_2 = function(param, x){
@@ -242,11 +294,11 @@ gradient_2 = function(param, x){
 }
 
 gradient_3 = function(param, x){
-  return(-2/(param[3]^2+1)*(tanh(param[5])*cos(x[5]-2*atan(param[3]))/(tanh(param[5])*sin(x[5]-2*atan(param[3]))+1) + tanh(exp(param[4]))*(exp(param[2])*x[4])^(exp(param[1]))*sin(x[5]-2*atan(param[3]))))
+  return(2/(param[3]^2+1)*(-tanh(param[5])*cos(x[5]-2*atan(param[3]))/(tanh(param[5])*sin(x[5]-2*atan(param[3]))+1) + tanh(exp(param[4]))*(exp(param[2])*x[4])^(exp(param[1]))*sin(x[5]-2*atan(param[3]))))
 }
 
 gradient_4 = function(param, x){
-  return(-exp(param[4])*tanh(exp(param[4])) - exp(param[4])/(cosh(exp(param[4]))^2)*(exp(param[2])*x[4])^(exp(param[1]))*cos(x[5]-2*atan(param[3])))
+  return(-exp(param[4])*tanh(exp(param[4])) + exp(param[4])/(cosh(exp(param[4]))^2)*(exp(param[2])*x[4])^(exp(param[1]))*cos(x[5]-2*atan(param[3])))
 }
 
 gradient_5 = function(param, x){
@@ -314,7 +366,7 @@ for (start_point in 1:n_start){
     xi_probs_i_normal = matrix(0, nrow = n_grid^2, ncol = ncolor)
     for (i in 1:n_grid^2){xi_probs_i_normal[i,] = xi_probs_i[i,]/sum(xi_probs_i[i,])}
     iteration = iteration + 1
-    opt_rho = optim(rho_est,rho_function, xi_probs_est = xi_probs, method = "Brent", lower = 0, upper = log(1+sqrt(100+ncolor)), control = list(trace=6))
+    opt_rho = optim(rho_est,rho_function, xi_probs_est = xi_probs, method = "L-BFGS-B", lower = 0, upper = log(1+sqrt(ncolor)))
     #rho_list[[iteration]] = opt_rho$par
     rho_vec[start_point] = opt_rho$par
     theta_est_reparam=theta_est
@@ -350,7 +402,7 @@ iteration = 1
 rho_est = rho_iter[[iteration]]
 while(T){
   theta_est = theta_iter[[iteration]]
-  #rho_est = rho_iter[[iteration]]
+  rho_est = rho_iter[[iteration]]
   potts_prob = apply(xi_A, 1, function(i) exp(rho_est*ifelse(i[1]==i[2],1,0)))
   potts_prob = potts_prob/sum(potts_prob)
   xi_probs_i = matrix(0, nrow = n_grid^2, ncol = ncolor)
@@ -368,10 +420,11 @@ while(T){
   }
   xi_probs_i_normal = matrix(0, nrow = n_grid^2, ncol = ncolor)
   for (i in 1:n_grid^2){xi_probs_i_normal[i,] = xi_probs_i[i,]/sum(xi_probs_i[i,])}
-  image.plot(matrix(apply(xi_probs_i_normal,1,function(i) max(i)*(1-max(i))), nrow = n_grid))
+  #image.plot(matrix(apply(xi_probs_i_normal,1,function(i) max(i)*(1-max(i))), nrow = n_grid))
   iteration = iteration + 1
-  #opt_rho = optim(rho_est,rho_function, xi_probs_est = xi_probs, method = "Brent", lower = 0, upper = log(1+sqrt(ncolor)))
-  #rho_iter[[iteration]] = opt_rho$par
+  opt_rho = optim(rho_est,rho_function, xi_probs_est = xi_probs, method = "Brent", lower = 0, upper = log(1+sqrt(ncolor)))
+  rho_iter[[iteration]] = opt_rho$par
+  print(opt_rho$par)
   theta_est_reparam=theta_est
   theta_est_reparam[,c(1,2,4)] = log(theta_est_reparam[,c(1,2,4)])
   theta_est_reparam[,3] = tan(theta_est_reparam[,3]/2)
@@ -383,29 +436,39 @@ while(T){
   theta_est_new[,3] = 2*atan(theta_est_new[,3])
   theta_est_new[,5] = tanh(theta_est_new[,5])
   theta_iter[[iteration]] = theta_est_new
-  #composite_likelihood_iter[[iteration]] = opt_rho$value + opt_theta$value
-  composite_likelihood_iter[[iteration]] = rho_function(xi_probs_est = xi_probs, rho_val = rho_est) + opt_theta$value
+  composite_likelihood_iter[[iteration]] = opt_rho$value + opt_theta$value
+  #composite_likelihood_iter[[iteration]] = rho_function(xi_probs_est = xi_probs, rho_val = rho_est) + opt_theta$value
   print(opt_rho$value + opt_theta$value)
-  if(abs(composite_likelihood_iter[[iteration]] - composite_likelihood_iter[[iteration-1]])/composite_likelihood_iter[[iteration-1]]<0.000001){break}
+  if(abs(composite_likelihood_iter[[iteration]] - composite_likelihood_iter[[iteration-1]])/composite_likelihood_iter[[iteration-1]]<0.00001){break}
 }
+opt_test = optim(c(opt_theta$par, opt_rho$par), method = "BFGS", fn = full_likelihood, control = list(trace = 6, REPORT = 1, reltol =1e-5))
+opt_test_rho = optim(opt_rho$par, method = "BFGS", fn = full_likelihood_rho_only, control = list(trace = 6, REPORT = 1, reltol =1e-5), parameter = opt_theta$par)
+rho_estimate = opt_test$par[1+5*ncolor]
+theta_estimate = matrix(opt_test$par[1:(5*ncolor)], ncol = 5)
+theta_estimate[,c(1,2,4)] = exp(theta_estimate[,c(1,2,4)])
+theta_estimate[,3]=2*atan(theta_estimate[,3])
+theta_estimate[,5]=tanh(theta_estimate[,5])
 
-hess_theta = hessian(theta_function, x = opt_theta$par, xi_probs_i_est_and_sample = cbind(xi_probs_i, simulated_sample))
-grad_theta = gradient(theta_function, xi_probs_i_est_and_sample = cbind(xi_probs_i, simulated_sample), x = opt_theta$par)
-grad_rho = gradient(rho_function, x = rho_est, xi_probs_est = xi_probs)
-hess_rho = hessian(rho_function, x = rho_est, xi_probs_est = xi_probs)
-grad = cbind(grad_theta, grad_rho)
-hess = matrix(0, nrow = 1+5*ncolor, ncol = 1+5*ncolor)
-hess[1+5*ncolor, 1+5*ncolor] = hess_rho
-hess[1:(5*ncolor), 1:(5*ncolor)] = hess_theta
-sum(diag(t(-grad)%*%(-grad)%*%(hess)))
+grad_1 = numDeriv::grad(full_likelihood, c(opt_theta$par, opt_rho$par))
+hess_1 = numDeriv::hessian(full_likelihood, c(opt_theta$par, opt_rho$par))
+sum(diag(grad_1%*%t(grad_1)%*%solve(hess_1)))
+grad_2 = numDeriv::grad(full_likelihood, c(opt_theta$par, opt_test_rho$par))
+hess_2 = numDeriv::hessian(full_likelihood, c(opt_theta$par, opt_test_rho$par))
+sum(diag((grad_2)%*%t(grad_2)%*%solve(hess_2)))
+grad_3 = numDeriv::grad(full_likelihood, opt_test$par)
+hess_3 = numDeriv::hessian(full_likelihood, opt_test$par)
+sum(diag((grad_3)%*%t(grad_3)%*%solve(hess_3)))
+grad_4 = rootSolve::gradient(theta_function, opt_theta$par, xi_probs_i_est_and_sample = cbind(xi_probs_i,simulated_sample))
+#hess_4 = jacobian(gradient_func, opt_theta$par, xi_probs_i_est_and_sample = cbind(xi_probs_i,simulated_sample))
+sum(diag((grad_4)%*%t(grad_4)%*%solve(hess_4)))
 
 
 plot_image(apply(xi_probs_i_normal,1,which.max))
 plot_image(spat_pros)
 spat_pros_2 = spat_pros
-spat_pros_2[which(spat_pros==1)] = 2
-spat_pros_2[which(spat_pros==2)] = 1
-spat_pros_2[which(spat_pros==3)] = 3
+spat_pros_2[which(spat_pros==1)] = 1
+spat_pros_2[which(spat_pros==2)] = 3
+spat_pros_2[which(spat_pros==3)] = 2
 plot_image(spat_pros_2)
 
 # 3: blue, 2: green, 1: red
@@ -416,7 +479,8 @@ plot(sapply(theta_iter, function(i) mean(abs(i-parameters)^2)))
 plot(sapply(theta_iter, function(i) mean(abs(i-parameters))))
 plot(unlist(composite_likelihood_iter))
 
-theta_max = theta_iter[[length(theta_iter)]]
+theta_max = theta_iter[[iteration]]
+theta_max = theta_estimate
 
 X_cor = seq(0,5,l=100)
 y_cor = seq(-pi,pi,l=100)
