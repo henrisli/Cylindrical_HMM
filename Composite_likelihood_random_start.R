@@ -162,7 +162,7 @@ optimal = optim(1,loglikelihood, lower = 0, method = "Brent", upper = 2*log(1+sq
 beta = optimal$par
 
 
-ncolor = 2
+ncolor = 5
 # Initialize parameters
 rho_list = list(0.5)
 #rho_list = list(rho)
@@ -342,7 +342,7 @@ for (iter in 1:n_start){
   theta_list[[iter]][,4] = runif(ncolor,0.05,3)
   theta_list[[iter]][,5] = runif(ncolor,-0.9,0.9)
 }
-for (start_point in 1:n_start){
+for (start_point in 6:n_start){
   while(T){
     #theta_est = theta_list[[iteration]]
     theta_est = theta_list[[start_point]]
@@ -391,8 +391,8 @@ for (start_point in 1:n_start){
   print(start_point)
 }
 
-plot(sapply(theta_list, function(i) sum(abs(i-parameters)^2)))
-plot(sapply(theta_list, function(i) sum(abs(i-parameters))))
+#plot(sapply(theta_list, function(i) sum(abs(i-parameters)^2)))
+#plot(sapply(theta_list, function(i) sum(abs(i-parameters))))
 plot(composite_likelihood)
 min.val = which.min(composite_likelihood)
 theta_iter = list(theta_list[[min.val]])
@@ -439,7 +439,7 @@ while(T){
   composite_likelihood_iter[[iteration]] = opt_rho$value + opt_theta$value
   #composite_likelihood_iter[[iteration]] = rho_function(xi_probs_est = xi_probs, rho_val = rho_est) + opt_theta$value
   print(opt_rho$value + opt_theta$value)
-  if(abs(composite_likelihood_iter[[iteration]] - composite_likelihood_iter[[iteration-1]])/composite_likelihood_iter[[iteration-1]]<0.00001){break}
+  if(abs(composite_likelihood_iter[[iteration]] - composite_likelihood_iter[[iteration-1]])/composite_likelihood_iter[[iteration-1]]<0.000001){break}
 }
 opt_test = optim(c(opt_theta$par, opt_rho$par), method = "BFGS", fn = full_likelihood, control = list(trace = 6, REPORT = 1, reltol =1e-5))
 opt_test_rho = optim(opt_rho$par, method = "BFGS", fn = full_likelihood_rho_only, control = list(trace = 6, REPORT = 1, reltol =1e-5), parameter = opt_theta$par)
