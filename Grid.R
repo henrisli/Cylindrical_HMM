@@ -166,14 +166,19 @@ p9 = plot_image(mat[9,])
 ggarrange(p1, p2, p3, p4, p5, p6, p7, p8, p9, nrow = 3, ncol = 3)
 
 ##
-set.seed(12345)
-rho = 0.92
+#set.seed(12345)
+rho = 0.4
 potts_param <- c(rep(0, ncolor), rho)
 x_potts <- matrix(1, nrow = n_grid, ncol = n_grid)
-foo <- packPotts(x_potts, k)
+foo <- packPotts(x_potts, ncolor)
 out <- potts(foo, potts_param, nbatch = 10)
-image.plot(unpackPotts(out$final))
-
+pdf(file="C:/Users/henri/Documents/GitHub/Master-Thesis/Images/Potts_04.pdf")
+image(unpackPotts(out$final), x = 1:24, y = 1:24, xlab = "", ylab = "", col = tim.colors(64))
+dev.off()
+plot_image(unpackPotts(out$final))
+pdf(file="C:/Users/henri/Documents/GitHub/Master-Thesis/Images/Potts_0.pdf")
+image(matrix(apply(rmultinom(24*24,1,rep(1/3,3)), 2, function(i) which(i==1)),nrow=24), x = 1:24, y = 1:24, xlab = "", ylab = "", col = tim.colors(64))
+dev.off()
 
 spat_pros = as.vector(unpackPotts(out$final))
 

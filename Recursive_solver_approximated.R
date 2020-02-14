@@ -1,3 +1,5 @@
+library(circular)
+library(potts)
 n_grid_test = 30
 ncolor_test = 3
 rho_test = 0.5
@@ -146,7 +148,7 @@ parameters_test_reparam[c(14,15,16)] = atanh(parameters_test_reparam[c(14,15,16)
 init_param = parameters_test_reparam
 init_param = c(runif(1,0,log(1+sqrt(ncolor_test))), runif(ncolor_test*5, parameters_test_reparam[2:(ncolor_test*5+1)]-discrepancy, parameters_test_reparam[2:(ncolor_test*5+1)]+discrepancy))
 #init_param = c(0.8, as.vector(parameters))
-#init_param = c(0.5, as.vector(parameters_test[1:2,]))
+#init_param = c(0.5, as.vector(parameters_test[c(1,3),]))
 #init_param[c(2,3,4,5,6,7,11,12,13)] = log(init_param[c(2,3,4,5,6,7,11,12,13)])
 #init_param[c(8,9,10)] = tan(init_param[c(8,9,10)]/2)
 #init_param[c(14,15,16)] = atanh(init_param[c(14,15,16)])
@@ -169,15 +171,23 @@ estimated_param[c(14,15,16)] = tanh(optimal$par[c(14,15,16)])
 #estimated_param[c(10,11)] = tanh(optimal$par[c(10,11)])
 
 estimated_param[1]
-estimated_param = matrix(estimated_param[2:16],nrow=3)
+estimated_param = matrix(estimated_param[2:(ncolor_test*5+1)],nrow=ncolor_test)
 estimated_param
 parameters_test[1:ncolor_test,]
+
+
+grad = numDeriv::grad(likelihood, optimal$par)
+hess = numDeriv::hessian(likelihood, optimal$par)
+sum(diag(grad%*%t(grad)%*%solve(hess)))
+
+
 
 
 
 values = apply(vals, MARGIN= 1, FUN = dabeley, param=estimated_param[1,])
 image.plot(x=X_cor, y = y_cor, z = matrix(values,nrow=100))
 values = apply(vals, MARGIN= 1, FUN = dabeley, param=estimated_param[2,])
+values[which(values==Inf)]=0
 image.plot(x=X_cor, y = y_cor, z = matrix(values,nrow=100))
 values = apply(vals, MARGIN= 1, FUN = dabeley, param=estimated_param[3,])
 image.plot(x=X_cor, y = y_cor, z = matrix(values,nrow=100))

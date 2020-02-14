@@ -1,6 +1,6 @@
 library(prodlim)
 n_rows = 4
-n_cols = 100
+n_cols = 200
 ncolor_test = 3
 rho_test = 0.5
 potts_param_test <- c(rep(0, ncolor_test), rho_test)
@@ -161,7 +161,7 @@ neg_likelihood_exact <- function(parameters_input, n_rows, data_sample, n_cols){
 }
 
 
-discrepancy = 0.7
+discrepancy = 3
 parameters_test_reparam = c(rho_test, as.vector(parameters_test[1:ncolor_test,]))
 parameters_test_reparam[c(2,3,4,5,6,7,11,12,13)] = log(parameters_test_reparam[c(2,3,4,5,6,7,11,12,13)])
 parameters_test_reparam[c(8,9,10)] = atan(parameters_test_reparam[c(8,9,10)]/2)
@@ -197,6 +197,10 @@ estimated_param = matrix(estimated_param[2:16],nrow=3)
 estimated_param
 parameters_test[1:ncolor_test,]
 
+grad = numDeriv::grad(likelihood_exact, optimal$par, n_rows = n_rows, data_sample = simulated_sample_test, n_cols = n_cols)
+hess = numDeriv::hessian(likelihood_exact, optimal$par, n_rows = n_rows, data_sample = simulated_sample_test, n_cols = n_cols)
+sum(diag(grad%*%t(grad)%*%solve(hess)))
+
 
 
 values = apply(vals, MARGIN= 1, FUN = dabeley, param=estimated_param[1,])
@@ -204,6 +208,7 @@ image.plot(x=X_cor, y = y_cor, z = matrix(values,nrow=100))
 values = apply(vals, MARGIN= 1, FUN = dabeley, param=estimated_param[2,])
 image.plot(x=X_cor, y = y_cor, z = matrix(values,nrow=100))
 values = apply(vals, MARGIN= 1, FUN = dabeley, param=estimated_param[3,])
+values[which(values==Inf)]=0
 image.plot(x=X_cor, y = y_cor, z = matrix(values,nrow=100))
 
 
