@@ -1,8 +1,8 @@
 library(prodlim)
-n_rows = 4
-n_cols = 200
+n_rows = 1
+n_cols = 144
 ncolor_test = 3
-rho_test = 0.5
+rho_test = 0.8
 potts_param_test <- c(rep(0, ncolor_test), rho_test)
 x_potts_test <- matrix(1, nrow = n_rows, ncol = n_cols)
 foo_test <- packPotts(x_potts_test, ncolor_test)
@@ -28,7 +28,7 @@ for(i in 1:(n_rows*n_cols)){
   simulated_sample_test$theta[i] = ifelse(u<(1+parameters_test[k_i,5]*sin(theta_1_test-parameters_test[k_i,3]))/2, theta_1_test, -theta_1_test)
   simulated_sample_test$x[i] = rweibull(1, scale = 1/(parameters_test[k_i,2]*(1-tanh(parameters_test[k_i,4])*cos(simulated_sample_test$theta[i]-parameters_test[k_i,3]))^(1/parameters_test[k_i,1])), shape = parameters_test[k_i,1])
 }
-ggplot(simulated_sample_test) + geom_point(aes(x=x, y = theta, col = as.factor(spat_pros_test))) + theme_bw() + theme(legend.position = "none")
+ggplot(simulated_sample_test) + geom_point(aes(x=x, y = theta, col = as.factor(spat_pros_test))) + theme_classic() + theme(legend.position = "none") + xlab("X") + ylab(expression(paste(Phi)))
 simulated_sample_test = as.matrix(simulated_sample_test)
 
 xi_A_2 = matrix(NA,nrow = ncolor_test^2,ncol = 2)
@@ -118,7 +118,7 @@ likelihood_exact <- function(parameters_input, n_rows, data_sample, n_cols){
     #forward_prob[t,2] = transition[t,2] + transition[t,4]
   }
   for (t in (n_rows+1):(n_rows*n_cols)){
-    if ((t-1)%%n_grid_test==0){
+    if ((t-1)%%n_rows==0){
       for (j in 1:(ncolor_test^(n_rows+1))){
         transition[t,j] = potts_prob_2[conf_n_2[j]]*dabeley_reparam(theta_val[xi_A_n[j,n_rows+1],], as.vector(data_sample[t,]))*moving_window[t-1,(j-1)%%(ncolor_test^(n_rows))+1]
       }
@@ -157,17 +157,30 @@ likelihood_exact <- function(parameters_input, n_rows, data_sample, n_cols){
 }
 
 neg_likelihood_exact <- function(parameters_input, n_rows, data_sample, n_cols){
-  return(-likelihood_exact(parameters_input, n_rows, data_sample, n_cols))
+  ret_val = 0
+  for (i in 1:(n_cols/n_rows)){
+    if (n_rows==1){
+    ret_val = ret_val -likelihood_exact_1(parameters_input, n_rows, data_sample[((i-1)*n_cols*n_rows+1):(n_rows*n_cols*i),], n_cols)
+    }else{ret_val = ret_val -likelihood_exact(parameters_input, n_rows, data_sample[((i-1)*n_cols*n_rows+1):(n_rows*n_cols*i),], n_cols)}
+  }
+  reverse = as.vector(t(matrix(1:(n_cols^2), nrow=n_cols)))
+  data_sample = data_sample[reverse,]
+  for (i in 1:(n_cols/n_rows)){
+    if (n_rows==1){
+      ret_val = ret_val -likelihood_exact_1(parameters_input, n_rows, data_sample[((i-1)*n_cols*n_rows+1):(n_rows*n_cols*i),], n_cols)
+    }else{ret_val = ret_val -likelihood_exact(parameters_input, n_rows, data_sample[((i-1)*n_cols*n_rows+1):(n_rows*n_cols*i),], n_cols)}
+  }
+  return(ret_val)
 }
 
 
 discrepancy = 3
-parameters_test_reparam = c(rho_test, as.vector(parameters_test[1:ncolor_test,]))
+parameters_test_reparam = c(rho_test, as.vector(parameters[1:ncolor_test,]*0.999+0.0001))
 parameters_test_reparam[c(2,3,4,5,6,7,11,12,13)] = log(parameters_test_reparam[c(2,3,4,5,6,7,11,12,13)])
 parameters_test_reparam[c(8,9,10)] = atan(parameters_test_reparam[c(8,9,10)]/2)
 parameters_test_reparam[c(14,15,16)] = atanh(parameters_test_reparam[c(14,15,16)])
 init_param = parameters_test_reparam
-init_param = c(runif(1,0,log(1+sqrt(ncolor_test))), runif(ncolor_test*5, parameters_test_reparam[2:(ncolor_test*5+1)]-discrepancy, parameters_test_reparam[2:(ncolor_test*5+1)]+discrepancy))
+#init_param = c(runif(1,0,log(1+sqrt(ncolor_test))), runif(ncolor_test*5, parameters_test_reparam[2:(ncolor_test*5+1)]-discrepancy, parameters_test_reparam[2:(ncolor_test*5+1)]+discrepancy))
 #init_param = c(0.8, as.vector(parameters))
 #init_param = c(0.5, as.vector(parameters_test[1:2,]))
 #init_param[c(2,3,4,5,6,7,11,12,13)] = log(init_param[c(2,3,4,5,6,7,11,12,13)])
@@ -176,14 +189,13 @@ init_param = c(runif(1,0,log(1+sqrt(ncolor_test))), runif(ncolor_test*5, paramet
 #init_param[c(2,3,4,5,8,9)] = log(init_param[c(2,3,4,5,8,9)])
 #init_param[c(6,7)] = tan(init_param[c(6,7)]/2)
 #init_param[c(10,11)] = atanh(init_param[c(10,11)])
-likelihood_exact(init_param, n_rows = n_rows, data_sample = simulated_sample_test, n_cols = n_cols)
-neg_likelihood_exact(init_param, n_rows = n_rows, data_sample = simulated_sample_test, n_cols = n_cols)
+#likelihood_exact(init_param, n_rows = n_rows, data_sample = simulated_sample_test, n_cols = n_cols)
+neg_likelihood_exact(init_param, n_rows = n_rows, data_sample = simulated_sample_temp, n_cols = n_cols)
 
 time_test = Sys.time()
-optimal = optim(init_param, neg_likelihood_exact, method = "BFGS", control = list(trace=6, REPORT = 1), n_rows = n_rows, data_sample = simulated_sample_test, n_cols = n_cols)
-#likelihood(c(0.5,-5,5,15,25, 35))
+optimal = optim(init_param, neg_likelihood_exact, method = "BFGS", control = list(trace=6, REPORT = 1), n_rows = n_rows, data_sample = simulated_sample_temp, n_cols = n_cols)
 Sys.time() - time_test
-optimal$par
+
 estimated_param = rep(optimal$par[1],1+5*ncolor_test)
 estimated_param[c(2,3,4,5,6,7,11,12,13)] = exp(optimal$par[c(2,3,4,5,6,7,11,12,13)])
 estimated_param[c(8,9,10)] = 2*atan(optimal$par[c(8,9,10)])
@@ -216,3 +228,60 @@ ttime = Sys.time()
 likelihood_exact(parameters_test_reparam, n_rows, data_sample, n_cols)
 #likelihood(parameters_test_reparam)
 Sys.time() - ttime
+
+
+
+likelihood_exact_1 <- function(parameters_input, n_rows, data_sample, n_cols){
+  rho_val = parameters_input[1]
+  theta_val = matrix(parameters_input[2:(5*ncolor_test+1)], nrow=ncolor_test)
+  
+  # First initiate normality constants and forward probabilities
+  norm_const = 0
+  for (j in 1:ncolor_test){
+    norm_const = norm_const + (1/ncolor_test)*dabeley_reparam(theta_val[j,], as.vector(data_sample[1,]))
+  }
+  norm_const = 1/norm_const
+  norm_const = c(norm_const, rep(NA, n_rows*n_cols-1))
+  #norm_const = c(1/(dnorm(y_test[1],mu[1],1)*0.5+dnorm(y_test[1],mu[2],1)*0.5), rep(NA,8))
+  forward_prob = matrix(0,nrow=n_rows*n_cols,ncol = ncolor_test)
+  for (j in 1:ncolor_test){
+    forward_prob[1,j] = norm_const[1]*(1/ncolor_test)*dabeley_reparam(theta_val[j,], as.vector(data_sample[1,]))
+  }
+  #forward_prob[1,1] = norm_const[1]*0.5*dnorm(y_test[1],mu[1],1)
+  #forward_prob[1,2] = norm_const[1]*0.5*dnorm(y_test[1],mu[2],1)
+  transition = matrix(0, nrow = n_cols*n_rows, ncol = ncolor_test^(n_rows+1))
+  moving_window = matrix(0, nrow = n_cols*n_rows, ncol = ncolor_test^(n_rows))
+  moving_window[1, 1:ncolor_test] = forward_prob[1,]
+  potts_prob_2 = apply(xi_A_2, 1, function(i) exp(rho_val*ifelse(i[1]==i[2],1,0)))
+  potts_prob_2 = potts_prob_2/sum(potts_prob_2)
+  
+  # Iterate to find constants and probabilities
+  for (t in 2:n_cols){
+    #norm_const[t] = 1/(dnorm(y_test[t],0,tau)*p*forward_prob[t-1,1] + (1-p)*dnorm(y_test[t],0,tau)*forward_prob[t-1,2] + dnorm(y_test[t],1,tau)*(1-p)*forward_prob[t-1,1] + dnorm(y_test[t],1,tau)*p*forward_prob[t-1,2])
+    for (j in 1:(ncolor_test^2)){
+      transition[t,j] = potts_prob_2[j]*moving_window[t-1,(j-1)%%(ncolor_test^(2-1))+1]*dabeley_reparam(theta_val[xi_A_n[j,2],], as.vector(data_sample[t,]))}
+    #transition[t,1] = potts_prob_2[1]*dnorm(y_test[t],mu[1],1)*forward_prob[t-1,1]
+    #transition[t,2] = potts_prob_2[2]*dnorm(y_test[t],mu[2],1)*forward_prob[t-1,1]
+    #transition[t,3] = potts_prob_2[3]*dnorm(y_test[t],mu[1],1)*forward_prob[t-1,2]
+    #transition[t,4] = potts_prob_2[4]*dnorm(y_test[t],mu[2],1)*forward_prob[t-1,2]
+    norm_const[t] = 1/sum(transition[t,])
+    transition[t,] = transition[t,]*norm_const[t]
+    #for (j in 1:(ncolor_test^(t-1))){
+    #  moving_window[t,j] = sum(transition[t, which(apply(xi_A_n[1:(ncolor_test^t),1:(t-1)], 1, function(x) identical(x, xi_A_n[j,1:(t-1)])))])
+    #}
+    for (j in 1:(ncolor_test^n_rows)){
+      moving_window[t,j] = sum(transition[t, (j-1)*ncolor_test+1:ncolor_test])
+    }
+    #moving_window[t,1:ncolor_test^2] = transition[t,1:ncolor_test^2]
+    for (j in 1:ncolor_test){
+      forward_prob[t,j] = sum(transition[t,which(xi_A_n[,2]==j)])
+    }
+    #forward_prob[t,1] = transition[t,1] + transition[t,3]
+    #forward_prob[t,2] = transition[t,2] + transition[t,4]
+  }
+  #print(norm_const)
+  #print(forward_prob)
+  #print(transition)
+  return(-sum(log(norm_const)))
+  #return(norm_const)
+}

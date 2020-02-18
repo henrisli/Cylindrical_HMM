@@ -7,7 +7,7 @@ library(fields)
 library(potts)
 library(rootSolve)
 
-n_grid = 30
+n_grid = 24
 mat_grid <- matrix(seq(n_grid^2), n_grid)
 
 addresses <- expand.grid(x = 1:n_grid, y = 1:n_grid)
@@ -87,14 +87,14 @@ ncolor = 3
 
 ##
 #set.seed(12345)
-rho = 0.8
+rho = 0.5
 potts_param <- c(rep(0, ncolor), rho)
 x_potts <- matrix(1, nrow = n_grid, ncol = n_grid)
 foo <- packPotts(x_potts, ncolor)
 out <- potts(foo, potts_param, nbatch = 10)
-image.plot(unpackPotts(out$final))
-plot_image(as.vector(unpackPotts(out$final)))
-
+pdf(file="C:/Users/henri/Documents/GitHub/Master-Thesis/Images/Case2_latent.pdf")
+image(unpackPotts(out$final), x = 1:24, y = 1:24, xlab = "", ylab = "", col = tim.colors(64))
+dev.off()
 
 spat_pros = as.vector(unpackPotts(out$final))
 plot_image(spat_pros)
@@ -110,11 +110,16 @@ X_cor = seq(0,5,l=100)
 y_cor = seq(-pi,pi,l=100)
 vals = cbind(rep(X_cor,100), rep(y_cor,each=100))
 parameters = rbind(c(2,1,0,0,1), c(2,1,0,0,-1), c(2,0.6,0,1.5,0))
+#parameters = rbind(c(0.5,0.1,0,0.9,0.5), c(0.8,0.9,1.5,0.9,0.5), c(1.3,1.7,3,0.9,0.5))
+#parameters = rbind(c(0.5,0.3,0,0.75,0.5), c(0.75,0.6,1,0.9,0.5), c(1,0.9,2,0.75,0.5))
 values = apply(vals, MARGIN= 1, FUN = dabeley, param=parameters[1,])
+values[which(values==Inf)]=0
 image.plot(x=X_cor, y = y_cor, z = matrix(values,nrow=100))
 values = apply(vals, MARGIN= 1, FUN = dabeley, param=parameters[2,])
+values[which(values==Inf)]=0
 image.plot(x=X_cor, y = y_cor, z = matrix(values,nrow=100))
 values = apply(vals, MARGIN= 1, FUN = dabeley, param=parameters[3,])
+values[which(values==Inf)]=0
 image.plot(x=X_cor, y = y_cor, z = matrix(values,nrow=100))
 
 simulated_sample = data.frame(x = rep(NA,n_grid*n_grid), theta = rep(NA,n_grid*n_grid))
@@ -127,7 +132,7 @@ for(i in 1:(n_grid*n_grid)){
   simulated_sample$theta[i] = ifelse(u<(1+parameters[k_i,5]*sin(theta_1-parameters[k_i,3]))/2, theta_1, -theta_1)
   simulated_sample$x[i] = rweibull(1, scale = 1/(parameters[k_i,2]*(1-tanh(parameters[k_i,4])*cos(simulated_sample$theta[i]-parameters[k_i,3]))^(1/parameters[k_i,1])), shape = parameters[k_i,1])
 }
-ggplot(simulated_sample) + geom_point(aes(x=x, y = theta, col = as.factor(spat_pros))) + theme_bw() + theme(legend.position = "none")
+ggplot(simulated_sample) + geom_point(aes(x=x, y = theta, col = as.factor(spat_pros))) + theme_classic() + theme(legend.position = "none") + xlab("X") + ylab(expression(paste(Phi)))
 
 df <- data.frame(x=rep((1:n_grid),n_grid),y=rep((1:n_grid),each=n_grid),dx=simulated_sample[,1]*cos(simulated_sample[,2]),dy=simulated_sample[,1]*sin(simulated_sample[,2]))
 ggplot(data=df, aes(x=x, y=y)) + geom_segment(aes(xend=x+dx, yend=y+dy, col = as.factor(spat_pros)), arrow = arrow(length = unit(0.2,"cm"))) + theme(legend.position="none", 
@@ -162,7 +167,7 @@ optimal = optim(1,loglikelihood, lower = 0, method = "Brent", upper = 2*log(1+sq
 beta = optimal$par
 
 
-ncolor = 5
+ncolor = 3
 # Initialize parameters
 rho_list = list(0.5)
 #rho_list = list(rho)
@@ -255,7 +260,7 @@ full_likelihood = function(parameter){
 
 full_likelihood_rho_only = function(rho_val, parameter){
   theta_val = matrix(parameter[1:(5*ncolor)], nrow=ncolor)
-  potts_prob = apply(xi_A, 1, function(i) exp(1/rho_val*ifelse(i[1]==i[2],1,0)))
+  potts_prob = apply(xi_A, 1, function(i) exp(rho_val*ifelse(i[1]==i[2],1,0)))
   potts_prob = potts_prob/sum(potts_prob)
   value = 0
   for (i in 1:A){
@@ -336,14 +341,15 @@ for (iter in 1:n_start){
   # theta_list[[iter]][,3] = 2*atan(theta_list[[iter]][,3])
   # theta_list[[iter]][,5] = tanh(theta_list[[iter]][,5])
   theta_list[[iter]] = matrix(NA, nrow=ncolor, ncol = 5)
-  theta_list[[iter]][,1] = runif(ncolor,1,3)
-  theta_list[[iter]][,2] = runif(ncolor,0.5,1)
-  theta_list[[iter]][,3] = runif(ncolor,-0.5,0.5)
-  theta_list[[iter]][,4] = runif(ncolor,0.05,3)
-  theta_list[[iter]][,5] = runif(ncolor,-0.9,0.9)
+  theta_list[[iter]][,1] = runif(ncolor,1,3) # 1-3
+  theta_list[[iter]][,2] = runif(ncolor,0.5,1) # 0.5-1
+  theta_list[[iter]][,3] = runif(ncolor,-0.5,0.5) # -0.5-0.5
+  theta_list[[iter]][,4] = runif(ncolor,0.05,3) # 0.05-3
+  theta_list[[iter]][,5] = runif(ncolor,-0.9,0.9) # -0.9-0.9
 }
-for (start_point in 6:n_start){
+for (start_point in 21:n_start){
   while(T){
+    exit = F
     #theta_est = theta_list[[iteration]]
     theta_est = theta_list[[start_point]]
     rho_est = rho_vec[start_point]
@@ -366,6 +372,7 @@ for (start_point in 6:n_start){
     xi_probs_i_normal = matrix(0, nrow = n_grid^2, ncol = ncolor)
     for (i in 1:n_grid^2){xi_probs_i_normal[i,] = xi_probs_i[i,]/sum(xi_probs_i[i,])}
     iteration = iteration + 1
+    if(any(is.na(xi_probs))){break}
     opt_rho = optim(rho_est,rho_function, xi_probs_est = xi_probs, method = "L-BFGS-B", lower = 0, upper = log(1+sqrt(ncolor)))
     #rho_list[[iteration]] = opt_rho$par
     rho_vec[start_point] = opt_rho$par
@@ -373,7 +380,14 @@ for (start_point in 6:n_start){
     theta_est_reparam[,c(1,2,4)] = log(theta_est_reparam[,c(1,2,4)])
     theta_est_reparam[,3] = tan(theta_est_reparam[,3]/2)
     theta_est_reparam[,5] = atanh(theta_est_reparam[,5])
-    opt_theta = optim(as.vector(theta_est_reparam), fn = theta_function, method = "BFGS", xi_probs_i_est_and_sample = cbind(xi_probs_i,simulated_sample), control = list(reltol = 0.01))
+    #opt_theta = optim(as.vector(theta_est_reparam), fn = theta_function, method = "BFGS", xi_probs_i_est_and_sample = cbind(xi_probs_i,simulated_sample), control = list(reltol = 0.01))
+    opt_theta = tryCatch(
+      optim(as.vector(theta_est_reparam), fn = theta_function, method = "BFGS", xi_probs_i_est_and_sample = cbind(xi_probs_i,simulated_sample), control = list(reltol = 0.01)),
+      error = function(e){ 
+        exit = T
+      }, finally = {}
+    )
+    if(class(opt_theta)!="list"){break}
     theta_est_new=matrix(opt_theta$par,nrow=ncolor)
     theta_est_new[,c(1,2,4)] = exp(theta_est_new[,c(1,2,4)])
     theta_est_new[,3] = 2*atan(theta_est_new[,3])
@@ -393,7 +407,7 @@ for (start_point in 6:n_start){
 
 #plot(sapply(theta_list, function(i) sum(abs(i-parameters)^2)))
 #plot(sapply(theta_list, function(i) sum(abs(i-parameters))))
-plot(composite_likelihood)
+plot(composite_likelihood[which(composite_likelihood<50000)])
 min.val = which.min(composite_likelihood)
 theta_iter = list(theta_list[[min.val]])
 rho_iter = list(rho_vec[min.val])
@@ -466,9 +480,9 @@ sum(diag((grad_4)%*%t(grad_4)%*%solve(hess_4)))
 plot_image(apply(xi_probs_i_normal,1,which.max))
 plot_image(spat_pros)
 spat_pros_2 = spat_pros
-spat_pros_2[which(spat_pros==1)] = 1
-spat_pros_2[which(spat_pros==2)] = 3
-spat_pros_2[which(spat_pros==3)] = 2
+spat_pros_2[which(spat_pros==1)] = 3
+spat_pros_2[which(spat_pros==2)] = 2
+spat_pros_2[which(spat_pros==3)] = 1
 plot_image(spat_pros_2)
 
 # 3: blue, 2: green, 1: red
@@ -501,7 +515,7 @@ loglik <- function(param, X, theta){
   kappa = param[4]
   lambda = param[5]
   if(alpha<0|beta<0|mu<(-pi)|mu>pi|kappa<0|abs(lambda)>1){return(Inf)}
-  return(-((alpha-1)*sum(log(X)) - beta^alpha*sum(X^alpha*(1-tanh(kappa)*cos(theta-mu)))+sum(log(1+lambda*sin(theta-mu)))+n*(alpha*log(beta)+log(alpha)-log(2*pi*cosh(kappa)))))
+  return(-((alpha-1)*sum(log(X)) - beta^alpha*sum(X^alpha*(1-tanh(kappa)*cos(theta-mu)))+sum(log(1+lambda*sin(theta-mu)))+n_grid*(alpha*log(beta)+log(alpha)-log(2*pi*cosh(kappa)))))
 }
 
 init_par = rep(0.5,5)

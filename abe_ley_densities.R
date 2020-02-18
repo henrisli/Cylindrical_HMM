@@ -14,6 +14,7 @@ dabeley <- function(param, x){
 X_cor = seq(0,5,l=100)
 y_cor = seq(-pi,pi,l=100)
 vals = cbind(rep(X_cor,100), rep(y_cor,each=100))
+parameters = rbind(c(2,1,0,0,0), c(2,1,0,0,0.5), c(2,1,0,0,1), c(2,1,0,1,0), c(2,1,0,1,0.5), c(2,1,0,1,1), c(2,1,0,1.5,0), c(2,1,0,1.5,0.5), c(2,1,0,1.5,1))
 values = apply(vals, MARGIN= 1, FUN = dabeley, param=parameters[1,])
 par(mgp=c(1.8,0.7,0),mar=c(3.7,3.7,2,2)+0.1)
 contour(x=X_cor, y = y_cor, z = matrix(values,nrow=100), xlab = "x", ylab = expression(paste(phi)), labcex = 1, cex.lab = 1.7)
@@ -60,5 +61,29 @@ values = apply(vals, MARGIN= 1, FUN = dabeley, param=parameters[9,])
 par(mgp=c(1.8,0.7,0),mar=c(3.7,3.7,2,2)+0.1)
 contour(x=X_cor, y = y_cor, z = matrix(values,nrow=100), xlab = "x", ylab = expression(paste(phi)), labcex = 1, cex.lab = 1.7)
 
+# Plot true densities from simulated samples
+parameters = rbind(c(2,1,0,0,1), c(2,1,0,0,-1), c(2,0.6,0,1.5,0))
+values = apply(vals, MARGIN= 1, FUN = dabeley, param=parameters[1,])
+par(mgp=c(1.8,0.7,0),mar=c(3.7,3.7,2,2)+0.1)
+contour(x=X_cor, y = y_cor, z = matrix(values,nrow=100), xlab = "x", ylab = expression(paste(phi)), labcex = 1, cex.lab = 1.7)
 
+values = apply(vals, MARGIN= 1, FUN = dabeley, param=parameters[2,])
+par(mgp=c(1.8,0.7,0),mar=c(3.7,3.7,2,2)+0.1)
+contour(x=X_cor, y = y_cor, z = matrix(values,nrow=100), xlab = "x", ylab = expression(paste(phi)), labcex = 1, cex.lab = 1.7)
 
+values = apply(vals, MARGIN= 1, FUN = dabeley, param=parameters[3,])
+par(mgp=c(1.8,0.7,0),mar=c(3.7,3.7,2,2)+0.1)
+contour(x=X_cor, y = y_cor, z = matrix(values,nrow=100), xlab = "x", ylab = expression(paste(phi)), labcex = 1, cex.lab = 1.7)
+
+parameters = rbind(c(3,1,0,0.21,0.8), c(5,5,0,0.21,0), c(1,0.8,0,1.7,-0.8))
+values = apply(vals, MARGIN= 1, FUN = dabeley, param=parameters[1,])
+par(mgp=c(1.8,0.7,0),mar=c(3.7,3.7,2,2)+0.1)
+contour(x=X_cor, y = y_cor, z = matrix(values,nrow=100), xlab = "x", ylab = expression(paste(phi)), labcex = 1, cex.lab = 1.7)
+
+values = apply(vals, MARGIN= 1, FUN = dabeley, param=parameters[2,])
+par(mgp=c(1.8,0.7,0),mar=c(3.7,3.7,2,2)+0.1)
+contour(x=X_cor, y = y_cor, z = matrix(values,nrow=100), xlab = "x", ylab = expression(paste(phi)), labcex = 1, cex.lab = 1.7)
+
+values = apply(vals, MARGIN= 1, FUN = dabeley, param=parameters[3,])
+par(mgp=c(1.8,0.7,0),mar=c(3.7,3.7,2,2)+0.1)
+contour(x=X_cor, y = y_cor, z = matrix(values,nrow=100), xlab = "x", ylab = expression(paste(phi)), labcex = 1, cex.lab = 1.7)
