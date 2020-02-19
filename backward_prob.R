@@ -66,7 +66,7 @@ backward_probs <- function(parameters_input, n_rows, data_sample, n_cols){
   backward_prob[n_rows*n_cols,] = forward_prob[n_rows*n_cols, ]
   for (t in (n_rows*n_cols):(n_rows+1)){
     for (j in 1:(ncolor_test^2)){
-      forward_transition[t,j] = sum(transition[t, (j-1)*ncolor_test^2 + 1:(ncolor_test^2)])
+      forward_transition[t,j] = sum(transition[t, (j-1)*ncolor_test^(n_rows-1) + 1:(ncolor_test^(n_rows-1))])
     }
     for (j in 1:(ncolor_test^2)){
       if (forward_prob[t,(j-1)%/%ncolor_test+1]==0 & forward_transition[t,j]==0){back_transition[t,j] = backward_prob[t, (j-1)%/%ncolor_test+1]

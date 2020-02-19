@@ -92,11 +92,11 @@ potts_param <- c(rep(0, ncolor), rho)
 x_potts <- matrix(1, nrow = n_grid, ncol = n_grid)
 foo <- packPotts(x_potts, ncolor)
 out <- potts(foo, potts_param, nbatch = 10)
-pdf(file="C:/Users/henri/Documents/GitHub/Master-Thesis/Images/Case2_latent.pdf")
+pdf(file="C:/Users/henri/Documents/GitHub/Master-Thesis/Images/Case1_latent.pdf")
 image(unpackPotts(out$final), x = 1:24, y = 1:24, xlab = "", ylab = "", col = tim.colors(64))
 dev.off()
 
-spat_pros = as.vector(unpackPotts(out$final))
+spat_pros_test = as.vector(unpackPotts(out$final))
 plot_image(spat_pros)
 
 dabeley <- function(param, x){
@@ -110,8 +110,8 @@ X_cor = seq(0,5,l=100)
 y_cor = seq(-pi,pi,l=100)
 vals = cbind(rep(X_cor,100), rep(y_cor,each=100))
 parameters = rbind(c(2,1,0,0,1), c(2,1,0,0,-1), c(2,0.6,0,1.5,0))
-#parameters = rbind(c(0.5,0.1,0,0.9,0.5), c(0.8,0.9,1.5,0.9,0.5), c(1.3,1.7,3,0.9,0.5))
-#parameters = rbind(c(0.5,0.3,0,0.75,0.5), c(0.75,0.6,1,0.9,0.5), c(1,0.9,2,0.75,0.5))
+parameters = rbind(c(0.5,0.1,0,0.9,0.5), c(0.8,0.9,1.5,0.9,0.5), c(1.3,1.7,3,0.9,0.5))
+parameters = rbind(c(0.5,0.3,0,0.75,0.5), c(0.75,0.6,1,0.75,0.5), c(1,0.9,2,0.75,0.5))
 values = apply(vals, MARGIN= 1, FUN = dabeley, param=parameters[1,])
 values[which(values==Inf)]=0
 image.plot(x=X_cor, y = y_cor, z = matrix(values,nrow=100))
@@ -331,6 +331,7 @@ gradient_func = function(xi_probs_i_est_and_sample, theta_val){
 }
 
 #composite_likelihood = list(Inf)
+ttime = Sys.time()
 n_start = 50
 composite_likelihood<- rep(1000000, n_start)
 rho_vec = runif(n_start, 0, log(1+sqrt(ncolor)))
@@ -341,13 +342,17 @@ for (iter in 1:n_start){
   # theta_list[[iter]][,3] = 2*atan(theta_list[[iter]][,3])
   # theta_list[[iter]][,5] = tanh(theta_list[[iter]][,5])
   theta_list[[iter]] = matrix(NA, nrow=ncolor, ncol = 5)
-  theta_list[[iter]][,1] = runif(ncolor,1,3) # 1-3
-  theta_list[[iter]][,2] = runif(ncolor,0.5,1) # 0.5-1
-  theta_list[[iter]][,3] = runif(ncolor,-0.5,0.5) # -0.5-0.5
-  theta_list[[iter]][,4] = runif(ncolor,0.05,3) # 0.05-3
+  theta_list[[iter]][,1] = runif(ncolor,0.3,2) # 1-3
+  theta_list[[iter]][,2] = runif(ncolor,0.05,2) # 0.5-1
+  theta_list[[iter]][,3] = runif(ncolor,-0.5,3) # -0.5-0.5
+  theta_list[[iter]][,4] = runif(ncolor,0.5,2) # 0.05-3
   theta_list[[iter]][,5] = runif(ncolor,-0.9,0.9) # -0.9-0.9
 }
-for (start_point in 21:n_start){
+converged = 1
+theta_list_converged = list()
+likelihood_converged = list()
+for (start_point in 1:n_start){
+  conv_exit = F
   while(T){
     exit = F
     #theta_est = theta_list[[iteration]]
@@ -394,74 +399,84 @@ for (start_point in 21:n_start){
     theta_est_new[,5] = tanh(theta_est_new[,5])
     # theta_list[[iteration]] = theta_est_new
     theta_list[[start_point]] = theta_est_new
+    #print(full_likelihood(c(opt_theta$par, opt_rho$par)))
+    #print(opt_theta$value+opt_rho$value)
     #print(opt_rho$value)
     #print(opt_theta$value)
     #composite_likelihood[[iteration]] = opt_rho$value + opt_theta$value
-    if(abs(opt_rho$value + opt_theta$value - composite_likelihood[start_point])/(composite_likelihood[start_point])<0.01){
-      composite_likelihood[start_point] = opt_rho$value + opt_theta$value
-      break}else{composite_likelihood[start_point] = opt_rho$value + opt_theta$value}
+    if(abs(full_likelihood(c(opt_theta$par, opt_rho$par)) - composite_likelihood[start_point])/(composite_likelihood[start_point])<0.01){
+      composite_likelihood[start_point] = full_likelihood(c(opt_theta$par, opt_rho$par))
+      conv_exit = T
+      break}else{composite_likelihood[start_point] = full_likelihood(c(opt_theta$par, opt_rho$par))}
     # if(abs(composite_likelihood[[iteration]] - composite_likelihood[[iteration-1]])<10){break}
+  }
+  if (conv_exit){
+    theta_list_converged[[converged]] = c(opt_theta$par, opt_rho$par)
+    likelihood_converged[[converged]] = composite_likelihood[start_point]
+    converged = converged + 1
   }
   print(start_point)
 }
 
 #plot(sapply(theta_list, function(i) sum(abs(i-parameters)^2)))
 #plot(sapply(theta_list, function(i) sum(abs(i-parameters))))
-plot(composite_likelihood[which(composite_likelihood<50000)])
+plot(composite_likelihood)
 min.val = which.min(composite_likelihood)
 theta_iter = list(theta_list[[min.val]])
 rho_iter = list(rho_vec[min.val])
 composite_likelihood_iter = list(composite_likelihood[min.val])
 iteration = 1
 rho_est = rho_iter[[iteration]]
-while(T){
-  theta_est = theta_iter[[iteration]]
-  rho_est = rho_iter[[iteration]]
-  potts_prob = apply(xi_A, 1, function(i) exp(rho_est*ifelse(i[1]==i[2],1,0)))
-  potts_prob = potts_prob/sum(potts_prob)
-  xi_probs_i = matrix(0, nrow = n_grid^2, ncol = ncolor)
-  for (i in 1:A){
-    for (j in 1:ncolor^2){
-      xi_probs[i,j] = potts_prob[j]*dabeley(theta_est[xi_A[j,1],], as.vector(simulated_sample[A_list[[i]][1],]))*dabeley(theta_est[xi_A[j,2],], as.vector(simulated_sample[A_list[[i]][2],]))
-    }
-    xi_probs[i,] = xi_probs[i,]/sum(xi_probs[i,])
-  }
-  for (i in 1:A){
-    for (j in 1:ncolor^2){
-      xi_probs_i[A_list[[i]][1],xi_A[j,1]] = xi_probs_i[A_list[[i]][1],xi_A[j,1]] + xi_probs[i,j]
-      xi_probs_i[A_list[[i]][2],xi_A[j,2]] = xi_probs_i[A_list[[i]][2],xi_A[j,2]] + xi_probs[i,j]
-    }
-  }
-  xi_probs_i_normal = matrix(0, nrow = n_grid^2, ncol = ncolor)
-  for (i in 1:n_grid^2){xi_probs_i_normal[i,] = xi_probs_i[i,]/sum(xi_probs_i[i,])}
-  #image.plot(matrix(apply(xi_probs_i_normal,1,function(i) max(i)*(1-max(i))), nrow = n_grid))
-  iteration = iteration + 1
-  opt_rho = optim(rho_est,rho_function, xi_probs_est = xi_probs, method = "Brent", lower = 0, upper = log(1+sqrt(ncolor)))
-  rho_iter[[iteration]] = opt_rho$par
-  print(opt_rho$par)
-  theta_est_reparam=theta_est
-  theta_est_reparam[,c(1,2,4)] = log(theta_est_reparam[,c(1,2,4)])
-  theta_est_reparam[,3] = tan(theta_est_reparam[,3]/2)
-  theta_est_reparam[,5] = atanh(theta_est_reparam[,5])
-  opt_theta = optim(as.vector(theta_est_reparam), fn = theta_function, method = "BFGS", xi_probs_i_est_and_sample = cbind(xi_probs_i,simulated_sample), control = list(trace=6, REPORT=1, reltol = 1e-5))
-  #opt_theta = optim(as.vector(theta_est_reparam), fn = theta_function, xi_probs_i_est_and_sample = cbind(xi_probs_i,simulated_sample), control = list(reltol = 1e-4))
-  theta_est_new=matrix(opt_theta$par,nrow=ncolor)
-  theta_est_new[,c(1,2,4)] = exp(theta_est_new[,c(1,2,4)])
-  theta_est_new[,3] = 2*atan(theta_est_new[,3])
-  theta_est_new[,5] = tanh(theta_est_new[,5])
-  theta_iter[[iteration]] = theta_est_new
-  composite_likelihood_iter[[iteration]] = opt_rho$value + opt_theta$value
-  #composite_likelihood_iter[[iteration]] = rho_function(xi_probs_est = xi_probs, rho_val = rho_est) + opt_theta$value
-  print(opt_rho$value + opt_theta$value)
-  if(abs(composite_likelihood_iter[[iteration]] - composite_likelihood_iter[[iteration-1]])/composite_likelihood_iter[[iteration-1]]<0.000001){break}
-}
-opt_test = optim(c(opt_theta$par, opt_rho$par), method = "BFGS", fn = full_likelihood, control = list(trace = 6, REPORT = 1, reltol =1e-5))
-opt_test_rho = optim(opt_rho$par, method = "BFGS", fn = full_likelihood_rho_only, control = list(trace = 6, REPORT = 1, reltol =1e-5), parameter = opt_theta$par)
+# while(T){
+#   theta_est = theta_iter[[iteration]]
+#   rho_est = rho_iter[[iteration]]
+#   potts_prob = apply(xi_A, 1, function(i) exp(rho_est*ifelse(i[1]==i[2],1,0)))
+#   potts_prob = potts_prob/sum(potts_prob)
+#   xi_probs_i = matrix(0, nrow = n_grid^2, ncol = ncolor)
+#   for (i in 1:A){
+#     for (j in 1:ncolor^2){
+#       xi_probs[i,j] = potts_prob[j]*dabeley(theta_est[xi_A[j,1],], as.vector(simulated_sample[A_list[[i]][1],]))*dabeley(theta_est[xi_A[j,2],], as.vector(simulated_sample[A_list[[i]][2],]))
+#     }
+#     xi_probs[i,] = xi_probs[i,]/sum(xi_probs[i,])
+#   }
+#   for (i in 1:A){
+#     for (j in 1:ncolor^2){
+#       xi_probs_i[A_list[[i]][1],xi_A[j,1]] = xi_probs_i[A_list[[i]][1],xi_A[j,1]] + xi_probs[i,j]
+#       xi_probs_i[A_list[[i]][2],xi_A[j,2]] = xi_probs_i[A_list[[i]][2],xi_A[j,2]] + xi_probs[i,j]
+#     }
+#   }
+#   xi_probs_i_normal = matrix(0, nrow = n_grid^2, ncol = ncolor)
+#   for (i in 1:n_grid^2){xi_probs_i_normal[i,] = xi_probs_i[i,]/sum(xi_probs_i[i,])}
+#   #image.plot(matrix(apply(xi_probs_i_normal,1,function(i) max(i)*(1-max(i))), nrow = n_grid))
+#   iteration = iteration + 1
+#   opt_rho = optim(rho_est,rho_function, xi_probs_est = xi_probs, method = "Brent", lower = 0, upper = log(1+sqrt(ncolor)))
+#   rho_iter[[iteration]] = opt_rho$par
+#   print(opt_rho$par)
+#   theta_est_reparam=theta_est
+#   theta_est_reparam[,c(1,2,4)] = log(theta_est_reparam[,c(1,2,4)])
+#   theta_est_reparam[,3] = tan(theta_est_reparam[,3]/2)
+#   theta_est_reparam[,5] = atanh(theta_est_reparam[,5])
+#   opt_theta = optim(as.vector(theta_est_reparam), fn = theta_function, method = "BFGS", xi_probs_i_est_and_sample = cbind(xi_probs_i,simulated_sample), control = list(trace=6, REPORT=1, reltol = 1e-5))
+#   #opt_theta = optim(as.vector(theta_est_reparam), fn = theta_function, xi_probs_i_est_and_sample = cbind(xi_probs_i,simulated_sample), control = list(reltol = 1e-4))
+#   theta_est_new=matrix(opt_theta$par,nrow=ncolor)
+#   theta_est_new[,c(1,2,4)] = exp(theta_est_new[,c(1,2,4)])
+#   theta_est_new[,3] = 2*atan(theta_est_new[,3])
+#   theta_est_new[,5] = tanh(theta_est_new[,5])
+#   theta_iter[[iteration]] = theta_est_new
+#   composite_likelihood_iter[[iteration]] = full_likelihood(c(opt_theta$par, opt_rho$par))
+#   #composite_likelihood_iter[[iteration]] = rho_function(xi_probs_est = xi_probs, rho_val = rho_est) + opt_theta$value
+#   print(opt_rho$value + opt_theta$value)
+#   if(abs(composite_likelihood_iter[[iteration]] - composite_likelihood_iter[[iteration-1]])/composite_likelihood_iter[[iteration-1]]<0.000001){break}
+# }
+#opt_test = optim(c(opt_theta$par, opt_rho$par), method = "BFGS", fn = full_likelihood, control = list(trace = 6, REPORT = 1, reltol =1e-5))
+opt_test = optim(theta_list_converged[[which.min(likelihood_converged)]], method = "BFGS", fn = full_likelihood, control = list(trace = 6, REPORT = 1, reltol =1e-5))
+#opt_test_rho = optim(opt_rho$par, method = "BFGS", fn = full_likelihood_rho_only, control = list(trace = 6, REPORT = 1, reltol =1e-5), parameter = opt_theta$par)
 rho_estimate = opt_test$par[1+5*ncolor]
 theta_estimate = matrix(opt_test$par[1:(5*ncolor)], ncol = 5)
 theta_estimate[,c(1,2,4)] = exp(theta_estimate[,c(1,2,4)])
 theta_estimate[,3]=2*atan(theta_estimate[,3])
 theta_estimate[,5]=tanh(theta_estimate[,5])
+Sys.time() - ttime
 
 grad_1 = numDeriv::grad(full_likelihood, c(opt_theta$par, opt_rho$par))
 hess_1 = numDeriv::hessian(full_likelihood, c(opt_theta$par, opt_rho$par))
@@ -477,12 +492,16 @@ grad_4 = rootSolve::gradient(theta_function, opt_theta$par, xi_probs_i_est_and_s
 sum(diag((grad_4)%*%t(grad_4)%*%solve(hess_4)))
 
 
+
+pdf(file="C:/Users/henri/Documents/GitHub/Master-Thesis/Images/Case1_latent_composite.pdf")
+image(matrix(apply(xi_probs_i_normal,1,which.max),nrow=n_grid), x = 1:24, y = 1:24, xlab = "", ylab = "", col = tim.colors(64))
+dev.off()
 plot_image(apply(xi_probs_i_normal,1,which.max))
-plot_image(spat_pros)
-spat_pros_2 = spat_pros
-spat_pros_2[which(spat_pros==1)] = 3
-spat_pros_2[which(spat_pros==2)] = 2
-spat_pros_2[which(spat_pros==3)] = 1
+plot_image(spat_pros_test)
+spat_pros_2 = spat_pros_test
+spat_pros_2[which(spat_pros_test==1)] = 2
+spat_pros_2[which(spat_pros_test==2)] = 3
+spat_pros_2[which(spat_pros_test==3)] = 1
 plot_image(spat_pros_2)
 
 # 3: blue, 2: green, 1: red
