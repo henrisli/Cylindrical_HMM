@@ -96,7 +96,7 @@ pdf(file="C:/Users/henri/Documents/GitHub/Master-Thesis/Images/Case1_latent.pdf"
 image(unpackPotts(out$final), x = 1:24, y = 1:24, xlab = "", ylab = "", col = tim.colors(64))
 dev.off()
 
-spat_pros_test = as.vector(unpackPotts(out$final))
+spat_pros = as.vector(unpackPotts(out$final))
 plot_image(spat_pros)
 
 dabeley <- function(param, x){
@@ -110,8 +110,8 @@ X_cor = seq(0,5,l=100)
 y_cor = seq(-pi,pi,l=100)
 vals = cbind(rep(X_cor,100), rep(y_cor,each=100))
 parameters = rbind(c(2,1,0,0,1), c(2,1,0,0,-1), c(2,0.6,0,1.5,0))
-parameters = rbind(c(0.5,0.1,0,0.9,0.5), c(0.8,0.9,1.5,0.9,0.5), c(1.3,1.7,3,0.9,0.5))
-parameters = rbind(c(0.5,0.3,0,0.75,0.5), c(0.75,0.6,1,0.75,0.5), c(1,0.9,2,0.75,0.5))
+#parameters = rbind(c(0.5,0.1,0,0.9,0.5), c(0.8,0.9,1.5,0.9,0.5), c(1.3,1.7,3,0.9,0.5))
+#parameters = rbind(c(0.5,0.3,0,0.75,0.5), c(0.75,0.6,1,0.75,0.5), c(1,0.9,2,0.75,0.5))
 values = apply(vals, MARGIN= 1, FUN = dabeley, param=parameters[1,])
 values[which(values==Inf)]=0
 image.plot(x=X_cor, y = y_cor, z = matrix(values,nrow=100))
@@ -241,8 +241,8 @@ theta_function = function(xi_probs_i_est_and_sample, theta_val){
 }
 
 full_likelihood = function(parameter){
-  rho_val = parameter[5*ncolor+1]
-  theta_val = matrix(parameter[1:(5*ncolor)], nrow=ncolor)
+  rho_val = parameter[1]
+  theta_val = matrix(parameter[2:(5*ncolor+1)], nrow=ncolor)
   potts_prob = apply(xi_A, 1, function(i) exp(rho_val*ifelse(i[1]==i[2],1,0)))
   potts_prob = potts_prob/sum(potts_prob)
   value = 0
@@ -399,19 +399,19 @@ for (start_point in 1:n_start){
     theta_est_new[,5] = tanh(theta_est_new[,5])
     # theta_list[[iteration]] = theta_est_new
     theta_list[[start_point]] = theta_est_new
-    #print(full_likelihood(c(opt_theta$par, opt_rho$par)))
+    #print(full_likelihood(c(opt_rho$par, opt_theta$par)))
     #print(opt_theta$value+opt_rho$value)
     #print(opt_rho$value)
     #print(opt_theta$value)
     #composite_likelihood[[iteration]] = opt_rho$value + opt_theta$value
-    if(abs(full_likelihood(c(opt_theta$par, opt_rho$par)) - composite_likelihood[start_point])/(composite_likelihood[start_point])<0.01){
-      composite_likelihood[start_point] = full_likelihood(c(opt_theta$par, opt_rho$par))
+    if(abs(full_likelihood(c(opt_rho$par, opt_theta$par)) - composite_likelihood[start_point])/(composite_likelihood[start_point])<0.01){
+      composite_likelihood[start_point] = full_likelihood(c(opt_rho$par, opt_theta$par))
       conv_exit = T
-      break}else{composite_likelihood[start_point] = full_likelihood(c(opt_theta$par, opt_rho$par))}
+      break}else{composite_likelihood[start_point] = full_likelihood(c(opt_rho$par, opt_theta$par))}
     # if(abs(composite_likelihood[[iteration]] - composite_likelihood[[iteration-1]])<10){break}
   }
   if (conv_exit){
-    theta_list_converged[[converged]] = c(opt_theta$par, opt_rho$par)
+    theta_list_converged[[converged]] = c(opt_rho$par, opt_theta$par)
     likelihood_converged[[converged]] = composite_likelihood[start_point]
     converged = converged + 1
   }
@@ -463,12 +463,12 @@ rho_est = rho_iter[[iteration]]
 #   theta_est_new[,3] = 2*atan(theta_est_new[,3])
 #   theta_est_new[,5] = tanh(theta_est_new[,5])
 #   theta_iter[[iteration]] = theta_est_new
-#   composite_likelihood_iter[[iteration]] = full_likelihood(c(opt_theta$par, opt_rho$par))
+#   composite_likelihood_iter[[iteration]] = full_likelihood(c(opt_rho$par, opt_theta$par))
 #   #composite_likelihood_iter[[iteration]] = rho_function(xi_probs_est = xi_probs, rho_val = rho_est) + opt_theta$value
 #   print(opt_rho$value + opt_theta$value)
 #   if(abs(composite_likelihood_iter[[iteration]] - composite_likelihood_iter[[iteration-1]])/composite_likelihood_iter[[iteration-1]]<0.000001){break}
 # }
-#opt_test = optim(c(opt_theta$par, opt_rho$par), method = "BFGS", fn = full_likelihood, control = list(trace = 6, REPORT = 1, reltol =1e-5))
+#opt_test = optim(c(opt_rho$par, opt_theta$par), method = "BFGS", fn = full_likelihood, control = list(trace = 6, REPORT = 1, reltol =1e-5))
 opt_test = optim(theta_list_converged[[which.min(likelihood_converged)]], method = "BFGS", fn = full_likelihood, control = list(trace = 6, REPORT = 1, reltol =1e-5))
 #opt_test_rho = optim(opt_rho$par, method = "BFGS", fn = full_likelihood_rho_only, control = list(trace = 6, REPORT = 1, reltol =1e-5), parameter = opt_theta$par)
 rho_estimate = opt_test$par[1+5*ncolor]
@@ -478,11 +478,11 @@ theta_estimate[,3]=2*atan(theta_estimate[,3])
 theta_estimate[,5]=tanh(theta_estimate[,5])
 Sys.time() - ttime
 
-grad_1 = numDeriv::grad(full_likelihood, c(opt_theta$par, opt_rho$par))
-hess_1 = numDeriv::hessian(full_likelihood, c(opt_theta$par, opt_rho$par))
+grad_1 = numDeriv::grad(full_likelihood, c(opt_rho$par, opt_theta$par))
+hess_1 = numDeriv::hessian(full_likelihood, c(opt_rho$par, opt_theta$par))
 sum(diag(grad_1%*%t(grad_1)%*%solve(hess_1)))
-grad_2 = numDeriv::grad(full_likelihood, c(opt_theta$par, opt_test_rho$par))
-hess_2 = numDeriv::hessian(full_likelihood, c(opt_theta$par, opt_test_rho$par))
+grad_2 = numDeriv::grad(full_likelihood, c(opt_test_rho$par, opt_theta$par))
+hess_2 = numDeriv::hessian(full_likelihood, c(opt_test_rho$par, opt_theta$par))
 sum(diag((grad_2)%*%t(grad_2)%*%solve(hess_2)))
 grad_3 = numDeriv::grad(full_likelihood, opt_test$par)
 hess_3 = numDeriv::hessian(full_likelihood, opt_test$par)
