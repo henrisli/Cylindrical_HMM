@@ -15,7 +15,7 @@ full_likelihood_RMSE = function(parameter, data_sample){
   return(-value)
 }
 
-n_replicates = 10
+n_replicates = 50
 
 elapsed_time_1 = rep(NA, n_replicates)
 elapsed_time_cl = rep(NA, n_replicates)
@@ -30,28 +30,28 @@ start_RMSE = rep(NA, n_replicates)
 
 for (rep_num in 1:n_replicates){
   
-  rho = 0.5
+  rho = 0.8
   potts_param <- c(rep(0, ncolor), rho)
   
   discrepancy = 0.5
-  theta_start = matrix(NA, nrow=ncolor, ncol = 5)
-  theta_start[,1] = runif(ncolor,1,5) # 1-3
-  theta_start[,2] = runif(ncolor,0.5,3) # 0.5-1
-  theta_start[,3] = runif(ncolor,-0.5,0.5) # -0.5-0.5
-  theta_start[,4] = runif(ncolor,0.05,3) # 0.05-3
-  theta_start[,5] = runif(ncolor,-0.9,0.9) # -0.9-0.9
-  
+  # theta_start = matrix(NA, nrow=ncolor, ncol = 5)
+  # theta_start[,1] = runif(ncolor,1,5) # 1-3
+  # theta_start[,2] = runif(ncolor,0.5,3) # 0.5-1
+  # theta_start[,3] = runif(ncolor,-0.5,0.5) # -0.5-0.5
+  # theta_start[,4] = runif(ncolor,0.05,3) # 0.05-3
+  # theta_start[,5] = runif(ncolor,-0.9,0.9) # -0.9-0.9
+  # 
   
   parameters = rbind(c(2,1,0,0,1), c(2,1,0,0,-1), c(2,0.6,0,1.5,0))
   #parameters = rbind(c(3,1,0,0.21,0.8), c(5,5,0,0.21,0), c(1,0.8,0,1.7,-0.8))
-  parameters_test_reparam = c(rho, as.vector(parameters)) + runif(16,c(-0.5,-1.5,-1.5,-1.5,-0.6,-0.6,-0.2, -0.7,-0.7,-0.7, 0.01, 0.01, -1.2, -0.99,0.01,-0.5), c(0.5,1.5,1.5,1.5,1,1,1.4, 0.7, 0.7, 0.7, 1.5, 1.5, 1.5, 0.01,0.99,0.5))
+  parameters_test_reparam = c(rho, as.vector(parameters)) + runif(16,c(-0.8,-1.5,-1.5,-1.5,-0.6,-0.6,-0.2, -0.7,-0.7,-0.7, 0.01, 0.01, -1.2, -0.99,0.01,-0.5), c(0.2,1.5,1.5,1.5,1,1,1.4, 0.7, 0.7, 0.7, 1.5, 1.5, 1.5, 0.01,0.99,0.5))
   
-  test1 = sqrt(mean((parameter_test_reparam-c(rho, as.vector(parameters)))^2))
-  test2 = sqrt(mean((parameter_test_reparam-c(rho, as.vector(parameters[c(1,3,2),])))^2))
-  test3 = sqrt(mean((parameter_test_reparam-c(rho, as.vector(parameters[c(2,3,1),])))^2))
-  test4 = sqrt(mean((parameter_test_reparam-c(rho, as.vector(parameters[c(2,1,3),])))^2))
-  test5 = sqrt(mean((parameter_test_reparam-c(rho, as.vector(parameters[c(3,2,1),])))^2))
-  test6 = sqrt(mean((parameter_test_reparam-c(rho, as.vector(parameters[c(3,1,2),])))^2))
+  test1 = sqrt(mean((parameters_test_reparam-c(rho, as.vector(parameters)))^2))
+  test2 = sqrt(mean((parameters_test_reparam-c(rho, as.vector(parameters[c(1,3,2),])))^2))
+  test3 = sqrt(mean((parameters_test_reparam-c(rho, as.vector(parameters[c(2,3,1),])))^2))
+  test4 = sqrt(mean((parameters_test_reparam-c(rho, as.vector(parameters[c(2,1,3),])))^2))
+  test5 = sqrt(mean((parameters_test_reparam-c(rho, as.vector(parameters[c(3,2,1),])))^2))
+  test6 = sqrt(mean((parameters_test_reparam-c(rho, as.vector(parameters[c(3,1,2),])))^2))
   start_RMSE[rep_num] = min(test1,test2,test3,test4,test5,test6)
   
   

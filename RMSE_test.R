@@ -1,9 +1,9 @@
 rho = 0.8
 potts_param <- c(rep(0, ncolor), rho)
 
-#parameters = rbind(c(2,1,0,0,1), c(2,1,0,0,-1), c(2,0.6,0,1.5,0))
-parameters = rbind(c(3,1,0,0.21,0.8), c(5,5,0,0.21,0), c(1,0.8,0,1.7,-0.8))
-parameters_test_reparam = c(rho, as.vector(parameters))
+parameters = rbind(c(2,1,0,0,1), c(2,1,0,0,-1), c(2,0.6,0,1.5,0))
+#parameters = rbind(c(3,1,0,0.21,0.8), c(5,5,0,0.21,0), c(1,0.8,0,1.7,-0.8))
+parameters_test_reparam = c(rho, as.vector(parameters)*0.99+0.001)
 parameters_test_reparam[c(2,3,4,5,6,7,11,12,13)] = log(parameters_test_reparam[c(2,3,4,5,6,7,11,12,13)])
 parameters_test_reparam[c(8,9,10)] = atan(parameters_test_reparam[c(8,9,10)]/2)
 parameters_test_reparam[c(14,15,16)] = atanh(parameters_test_reparam[c(14,15,16)])
@@ -26,7 +26,7 @@ full_likelihood_RMSE = function(parameter, data_sample){
   return(-value)
 }
 
-n_replicates = 20
+n_replicates = 50
 
 elapsed_time_1 = rep(NA, n_replicates)
 elapsed_time_2 = rep(NA, n_replicates)
@@ -40,7 +40,7 @@ estimated_field_1 = matrix(NA, nrow = n_replicates, ncol = n_grid^2)
 estimated_field_2 = matrix(NA, nrow = n_replicates, ncol = n_grid^2)
 estimated_field_cl = matrix(NA, nrow = n_replicates, ncol = n_grid^2)
 
-for (rep_num in 3:n_replicates){
+for (rep_num in 1:n_replicates){
   # Draw random field
   x_potts <- matrix(1, nrow = n_grid, ncol = n_grid)
   foo <- packPotts(x_potts, ncolor)
@@ -192,10 +192,10 @@ mean(elapsed_time_2, na.rm = T)
 mean(elapsed_time_cl, na.rm = T)
 
 1-(length(which(estimated_field_1 != true_field))/n_replicates)/(24*24)
-1-(length(which(estimated_field_2 != true_field))/(n_replicates))/(24*24)
+1-(length(which(estimated_field_2[c(3,4,31,41,42),] != true_field[c(3,4,31,41,42),]))/(5))/(24*24)
 1-(length(which(estimated_field_cl != true_field))/(n_replicates))/(24*24)
 
 true_parameters = c(rho, as.vector(parameters))
 mean(apply(parameter_estimates_1, 1, function(i) sqrt(mean((i-true_parameters)^2))), na.rm = T)
-mean(apply(parameter_estimates_2, 1, function(i) sqrt(mean((i-true_parameters)^2))), na.rm = T)
+mean(apply(parameter_estimates_2[c(3,4,31,41,42),], 1, function(i) sqrt(mean((i-true_parameters)^2))), na.rm = T)
 mean(apply(parameter_estimates_cl, 1, function(i) sqrt(mean((i-true_parameters)^2))), na.rm = T)
