@@ -19,7 +19,7 @@ values[which(values==Inf)]=0
 image.plot(x=X_cor, y = y_cor, z = matrix(values,nrow=100))
 
 
-parameters_test_reparam = c(rho, as.vector(parameters)*0.99+0.001)
+parameters_test_reparam = c(rho, as.vector(parameters)*(1-1e-16)+1e-16)
 parameters_test_reparam[c(2,3,4,5,6,7,11,12,13)] = log(parameters_test_reparam[c(2,3,4,5,6,7,11,12,13)])
 parameters_test_reparam[c(8,9,10)] = atan(parameters_test_reparam[c(8,9,10)]/2)
 parameters_test_reparam[c(14,15,16)] = log(parameters_test_reparam[c(14,15,16)]/(1-parameters_test_reparam[c(14,15,16)]))
@@ -57,7 +57,7 @@ for (rep_num in 1:n_replicates){
       simulated_sample$x[i] = parameters[k_i,2]*(((1-u)^(-parameters[k_i,4]/parameters[k_i,1])-1)/(parameters[k_i,4]/parameters[k_i,1]*(1-parameters[k_i,5]*cos(simulated_sample$theta[i] - parameters[k_i,3]))))^parameters[k_i,1]
     }
   }
-  #ggplot(simulated_sample) + geom_point(aes(x=x, y = theta, col = as.factor(spat_pros))) + theme_classic() + theme(legend.position = "none") + xlab("X") + ylab(expression(paste(Phi)))
+  #ggplot(simulated_sample) + geom_point(aes(x=x, y = theta, col = as.factor(spat_pros))) + theme_classic(base_size=20) + theme(legend.position = "none") + xlab("X") + ylab(expression(paste(Phi)))
   simulated_sample = as.matrix(simulated_sample)
   
   
@@ -122,10 +122,10 @@ mean(apply(parameter_estimates_1, 1, function(i) sqrt(mean((i-true_parameters)^2
 df = data.frame(y = as.vector(parameter_estimates_1))
 df$x=c(rep(NA,n_replicates),rep(rep(1:3,each=n_replicates),5))
 df$x = as.factor(df$x)
-df$supp = c(rep("rho", n_replicates), rep(c("alpha", "beta", "mu", "kappa", "lambda"), each =n_replicates*3))
+df$supp = c(rep("rho", n_replicates), rep(c("alpha", "beta", "mu", "tau", "kappa"), each =n_replicates*3))
 
 #pdf(file="C:/Users/henri/Documents/GitHub/Master-Thesis/Images/Case1_02_bias_htlp.pdf")
-ggplot(df, aes(x=supp, y=y, fill=x)) +  geom_boxplot() + labs(fill = "Class") + scale_x_discrete(labels=c(expression(paste(alpha)),expression(paste(beta)),expression(paste(mu)),expression(paste(kappa)), expression(paste(lambda)), expression(paste(rho))), limits = c("alpha", "beta", "mu", "kappa", "lambda", "rho")) + xlab("Parameter") + ylab("Value") + theme_classic(base_size=20) + coord_cartesian(ylim=c(-2,3.5))
+ggplot(df, aes(x=supp, y=y, fill=x)) +  geom_boxplot() + labs(fill = "Class") + scale_x_discrete(labels=c(expression(paste(alpha)),expression(paste(beta)),expression(paste(mu)),expression(paste(tau)), expression(paste(kappa)), expression(paste(rho))), limits = c("alpha", "beta", "mu", "tau", "kappa", "rho")) + xlab("Parameter") + ylab("Value") + theme_classic(base_size=20) + coord_cartesian(ylim=c(-2,3.5))
 #dev.off()
 
 parameter_estimates_1_1_05 = as.matrix(read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_case1_05_htlp.csv"))
@@ -136,4 +136,4 @@ df_test = data.frame(y105 = apply(parameter_estimates_1_1_05,2,var))
 df_test$y205 = apply(parameter_estimates_1_2_05,2,var)
 df_test$y108 = apply(parameter_estimates_1_1_08,2,var)
 df_test$y208 = apply(parameter_estimates_1_2_08,2,var)
-ggplot(df_test, aes(x=1:16)) + geom_point(aes(y=y105, col = "1, 0.5"), size = 3) + geom_point(aes(y=y108, col = "1, 0.8"), size = 3) + geom_point(aes(y=y205, col = "2, 0.5"), size = 3) + geom_point(aes(y=y208, col = "2, 0.8"), size = 3) + scale_x_discrete(labels=c(expression(paste(rho)), expression(paste(alpha)[1]), expression(paste(alpha)[2]), expression(paste(alpha)[3]), expression(paste(beta)[1]), expression(paste(beta)[2]), expression(paste(beta)[3]), expression(paste(mu)[1]), expression(paste(mu)[2]), expression(paste(mu)[3]), expression(paste(kappa)[1]), expression(paste(kappa)[2]), expression(paste(kappa)[3]), expression(paste(lambda)[1]), expression(paste(lambda)[2]), expression(paste(lambda)[3])), limits = 1:16) + xlab("Parameter") + ylab("Variance") + theme_classic(base_size=20) + labs(col = expression(paste("Case, ",rho)))
+ggplot(df_test, aes(x=1:16)) + geom_point(aes(y=y105, col = "1, 0.5"), size = 3) + geom_point(aes(y=y108, col = "1, 0.8"), size = 3) + geom_point(aes(y=y205, col = "2, 0.5"), size = 3) + geom_point(aes(y=y208, col = "2, 0.8"), size = 3) + scale_x_discrete(labels=c(expression(paste(rho)), expression(paste(alpha)[1]), expression(paste(alpha)[2]), expression(paste(alpha)[3]), expression(paste(beta)[1]), expression(paste(beta)[2]), expression(paste(beta)[3]), expression(paste(mu)[1]), expression(paste(mu)[2]), expression(paste(mu)[3]), expression(paste(tau)[1]), expression(paste(tau)[2]), expression(paste(tau)[3]), expression(paste(kappa)[1]), expression(paste(kappa)[2]), expression(paste(kappa)[3])), limits = 1:16) + xlab("Parameter") + ylab("Variance") + theme_classic(base_size=20) + labs(col = expression(paste("Case, ",rho)))
