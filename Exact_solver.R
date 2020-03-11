@@ -173,6 +173,17 @@ neg_likelihood_exact <- function(parameters_input, n_rows, data_sample, n_cols){
   return(ret_val)
 }
 
+neg_likelihood_exact_hess <- function(parameters_input, n_rows, data_sample, n_cols){
+  ret_val = 0
+  for (i in 1:(n_cols-n_rows+1)){
+    if (n_rows==1){
+      ret_val = ret_val -likelihood_exact_1(parameters_input, n_rows, data_sample[((i-1)*n_cols*n_rows+1):(n_rows*n_cols*i),], n_cols)
+    }else{ret_val = ret_val -likelihood_exact(parameters_input, n_rows, data_sample[1:(n_rows*n_cols) + (i-1)*n_cols,], n_cols)}
+  }
+  return(ret_val)
+}
+
+
 
 discrepancy = 3
 #logliks <- rep(NA,n_start)

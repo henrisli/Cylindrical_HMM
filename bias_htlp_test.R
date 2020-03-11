@@ -1,4 +1,4 @@
-rho = 0.5
+rho = 0.2
 potts_param <- c(rep(0, ncolor), rho)
 
 
@@ -103,7 +103,7 @@ for (rep_num in 1:n_replicates){
   
   estimated_probabilities = find_back_probs_htlp(optimal$par, n_rows, simulated_sample, n_cols)
   estimated_field_1[rep_num, ] = apply(estimated_probabilities, 1, which.max)
-  write.table(parameter_estimates_1[1:rep_num,], "C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_case1_05_htlp.csv")
+  write.table(parameter_estimates_1[1:rep_num,], "C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_case1_02_htlp.csv")
   print(rep_num)
 }
 
@@ -124,7 +124,7 @@ df$x=c(rep(NA,n_replicates),rep(rep(1:3,each=n_replicates),5))
 df$x = as.factor(df$x)
 df$supp = c(rep("rho", n_replicates), rep(c("alpha", "beta", "mu", "kappa", "lambda"), each =n_replicates*3))
 
-#pdf(file="C:/Users/henri/Documents/GitHub/Master-Thesis/Images/Case1_08_bias_htlp.pdf")
+#pdf(file="C:/Users/henri/Documents/GitHub/Master-Thesis/Images/Case1_02_bias_htlp.pdf")
 ggplot(df, aes(x=supp, y=y, fill=x)) +  geom_boxplot() + labs(fill = "Class") + scale_x_discrete(labels=c(expression(paste(alpha)),expression(paste(beta)),expression(paste(mu)),expression(paste(kappa)), expression(paste(lambda)), expression(paste(rho))), limits = c("alpha", "beta", "mu", "kappa", "lambda", "rho")) + xlab("Parameter") + ylab("Value") + theme_classic(base_size=20) + coord_cartesian(ylim=c(-2,3.5))
 #dev.off()
 
