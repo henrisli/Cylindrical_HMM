@@ -3,10 +3,10 @@ potts_param <- c(rep(0, ncolor), rho)
 
 
 # Case 1: "Hard"
-parameters = rbind(c(0.25,1,-pi/2,0,0.7), c(0.25,1,pi/2,0,0.7), c(0.5,0.5,0,0.8,0.8))
+#parameters = rbind(c(0.25,1,-pi/2,0,0.7), c(0.25,1,pi/2,0,0.7), c(0.5,0.5,0,0.8,0.8))
 
 # Case 2: "Easy"
-#parameters = rbind(c(0.25,1,0,0,0.6), c(0.25,3,0,0,0.6), c(0.25,0.5,0,0,0.2))
+parameters = rbind(c(0.25,1,0,0,0.6), c(0.25,3,0,0,0.6), c(0.25,0.5,0,0,0.2))
 
 values = apply(vals, MARGIN= 1, FUN = dhtlp, param=parameters[1,])
 values[which(values==Inf)]=0
@@ -19,7 +19,7 @@ values[which(values==Inf)]=0
 image.plot(x=X_cor, y = y_cor, z = matrix(values,nrow=100))
 
 
-parameters_test_reparam = c(rho, as.vector(parameters)*(1-1e-16)+1e-16)
+parameters_test_reparam = c(rho, as.vector(parameters)*(0.99)+0.001)
 parameters_test_reparam[c(2,3,4,5,6,7,11,12,13)] = log(parameters_test_reparam[c(2,3,4,5,6,7,11,12,13)])
 parameters_test_reparam[c(8,9,10)] = atan(parameters_test_reparam[c(8,9,10)]/2)
 parameters_test_reparam[c(14,15,16)] = log(parameters_test_reparam[c(14,15,16)]/(1-parameters_test_reparam[c(14,15,16)]))
@@ -35,7 +35,7 @@ parameter_estimates_1 = matrix(NA, nrow = n_replicates, ncol = 16)
 true_field = matrix(NA, nrow = n_replicates, ncol = n_grid^2)
 estimated_field_1 = matrix(NA, nrow = n_replicates, ncol = n_grid^2)
 
-for (rep_num in 1:n_replicates){
+for (rep_num in 60:n_replicates){
   # Draw random field
   x_potts <- matrix(1, nrow = n_grid, ncol = n_grid)
   foo <- packPotts(x_potts, ncolor)
@@ -103,7 +103,7 @@ for (rep_num in 1:n_replicates){
   
   estimated_probabilities = find_back_probs_htlp(optimal$par, n_rows, simulated_sample, n_cols)
   estimated_field_1[rep_num, ] = apply(estimated_probabilities, 1, which.max)
-  write.table(parameter_estimates_1[1:rep_num,], "C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_case1_02_htlp.csv")
+  write.table(parameter_estimates_1[1:rep_num,], "C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_case2_02_htlp.csv")
   print(rep_num)
 }
 
@@ -132,8 +132,10 @@ parameter_estimates_1_1_05 = as.matrix(read.table("C://Users//henri//Documents//
 parameter_estimates_1_1_08 = as.matrix(read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_case1_08_htlp.csv"))
 parameter_estimates_1_2_05 = as.matrix(read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_case2_05_htlp.csv"))
 parameter_estimates_1_2_08 = as.matrix(read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_case2_08_htlp.csv"))
+parameter_estimates_1_2_02 = as.matrix(read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_case2_02_htlp.csv"))
 df_test = data.frame(y105 = apply(parameter_estimates_1_1_05,2,var))
 df_test$y205 = apply(parameter_estimates_1_2_05,2,var)
 df_test$y108 = apply(parameter_estimates_1_1_08,2,var)
 df_test$y208 = apply(parameter_estimates_1_2_08,2,var)
-ggplot(df_test, aes(x=1:16)) + geom_point(aes(y=y105, col = "1, 0.5"), size = 3) + geom_point(aes(y=y108, col = "1, 0.8"), size = 3) + geom_point(aes(y=y205, col = "2, 0.5"), size = 3) + geom_point(aes(y=y208, col = "2, 0.8"), size = 3) + scale_x_discrete(labels=c(expression(paste(rho)), expression(paste(alpha)[1]), expression(paste(alpha)[2]), expression(paste(alpha)[3]), expression(paste(beta)[1]), expression(paste(beta)[2]), expression(paste(beta)[3]), expression(paste(mu)[1]), expression(paste(mu)[2]), expression(paste(mu)[3]), expression(paste(tau)[1]), expression(paste(tau)[2]), expression(paste(tau)[3]), expression(paste(kappa)[1]), expression(paste(kappa)[2]), expression(paste(kappa)[3])), limits = 1:16) + xlab("Parameter") + ylab("Variance") + theme_classic(base_size=20) + labs(col = expression(paste("Case, ",rho)))
+df_test$y202 = apply(parameter_estimates_1_2_02,2,var)
+ggplot(df_test, aes(x=1:16)) + geom_point(aes(y=y202, col = "2, 0.2"), size = 3) + geom_point(aes(y=y105, col = "1, 0.5"), size = 3) + geom_point(aes(y=y108, col = "1, 0.8"), size = 3) + geom_point(aes(y=y205, col = "2, 0.5"), size = 3) + geom_point(aes(y=y208, col = "2, 0.8"), size = 3) + scale_x_discrete(labels=c(expression(paste(rho)), expression(paste(alpha)[1]), expression(paste(alpha)[2]), expression(paste(alpha)[3]), expression(paste(beta)[1]), expression(paste(beta)[2]), expression(paste(beta)[3]), expression(paste(mu)[1]), expression(paste(mu)[2]), expression(paste(mu)[3]), expression(paste(tau)[1]), expression(paste(tau)[2]), expression(paste(tau)[3]), expression(paste(kappa)[1]), expression(paste(kappa)[2]), expression(paste(kappa)[3])), limits = 1:16) + xlab("Parameter") + ylab("Variance") + theme_classic(base_size=20) + labs(col = expression(paste("Case, ",rho)))
