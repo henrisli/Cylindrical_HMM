@@ -249,16 +249,19 @@ image.plot(x=x_points, y = y_points, current$r[x_points,y_points])
 r_sample = as.vector(current$r[x_points, y_points])
 theta_sample = as.vector(current$theta[x_points, y_points])
 df <- data.frame(x=rep(current$x[x_points],length(y_points)),y=rep(current$y[y_points],each=length(x_points)),dx=r_sample*cos(theta_sample)*3,dy=r_sample*sin(theta_sample)*3)
-ggplot(data=df, aes(x=x, y=y)) + geom_segment(aes(xend=x+dx, yend=y+dy), col = as.factor(apply(xi_probs_i_normal, 1, which.max)), arrow = arrow(length = unit(0.08,"cm"))) + theme(legend.position="none") + coord_fixed(ratio=1)
+ggplot(data=df, aes(x=x, y=y)) + geom_segment(aes(xend=x+dx, yend=y+dy), col = as.factor(apply(estimated_probabilities, 1, which.max)), arrow = arrow(length = unit(0.08,"cm"))) + theme(legend.position="none") + coord_fixed(ratio=1)
 
 
 data_set = data.frame(x = r_sample, theta = theta_sample)
-ggplot(data_set) + geom_point(aes(x=x, y = theta), col = as.factor(apply(xi_probs_i_normal, 1, which.max)), size = 0.1) + theme_classic()# + coord_cartesian(xlim = c(0,50))
+ggplot(data_set) + geom_point(aes(x=x, y = theta), col = as.factor(apply(estimated_probabilities, 1, which.max)), size = 0.1) + theme_classic()# + coord_cartesian(xlim = c(0,50))
 loglik_new = function(param1, x){
   return(-sum(log(apply(x, 1, dabeley_reparam, param=param1))))
 }
 #param_test = c(1.1,0.9,0,1.7,-0.8)
-#param_test = c(1.5,0.2,0,0.8,0)
+# X100:
+#param_test = c(1.7,0.1,0,0.8,0)
+#param_test = c(3,0.5,0,0,0)
+# X1:
 param_test = c(1.4,10,0,0.6,0)
 param_test = c(1.9,15,0,0,0)
 values = apply(vals, MARGIN= 1, FUN = dabeley, param=param_test)

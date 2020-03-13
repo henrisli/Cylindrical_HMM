@@ -26,8 +26,8 @@ get.neighbors <- function(rw) {
 # Not exactly sure if the simulation is working...
 
 neighbor_list = apply(addresses,1, get.neighbors) # Returns a list with neighbors
-k=2
-ncolor = 2
+k=3
+ncolor = 3
 
 # simulate_posterior = function(beta, l_0, iterations, k){
 #   l = l_0
@@ -142,12 +142,10 @@ optimal = optim(1,loglikelihood, lower = 0, method = "Brent", upper = 2*log(1+sq
 beta = optimal$par
 
 
-ncolor = 2
+ncolor = 3
+
 # Initialize parameters
-rho_list = list(0.5)
-#rho_list = list(rho)
-theta_list = list(rbind(c(1,1,0,0.01,0), c(1,1,0,1.5,0.99), c(3,0.5,0,2,0)))
-#theta_list = list(parameters)
+
 iteration = 1
 A = n_grid*(n_grid-1)*2
 A_list = list()
@@ -256,12 +254,13 @@ rho_vec = runif(n_start, 0, log(1+sqrt(ncolor)))
 theta_list = list()
 for (iter in 1:n_start){
   theta_list[[iter]] = matrix(NA, nrow=ncolor, ncol = 5)
-  theta_list[[iter]][,1] = runif(ncolor,0.9,3) # 1-3
-  theta_list[[iter]][,2] = runif(ncolor,3,20) # 0.5-1
-  theta_list[[iter]][,3] = runif(ncolor,-pi,pi) # -0.5-0.5
-  theta_list[[iter]][,4] = runif(ncolor,0,3) # 0.05-3
+  theta_list[[iter]][,1] = runif(ncolor,0.9,3) # 0.9-5 x100, 0.9-3 x1
+  theta_list[[iter]][,2] = runif(ncolor,5,25) # 0-0.5 x100, 5-25 x1
+  theta_list[[iter]][,3] = runif(ncolor,-pi,pi) # -pi - pi
+  theta_list[[iter]][,4] = runif(ncolor,0,3) # 0 - 3
   theta_list[[iter]][,5] = runif(ncolor,-0.9,0.9) # -0.9-0.9
 }
+
 converged = 1
 theta_list_converged = list()
 likelihood_converged = list()
@@ -362,7 +361,7 @@ for (start_point in 1:n_start){
     theta_est_reparam[,c(1,2,4)] = log(theta_est_reparam[,c(1,2,4)])
     theta_est_reparam[,3] = tan(theta_est_reparam[,3]/2)
     theta_est_reparam[,5] = atanh(theta_est_reparam[,5])
-    
+    if (theta_function(as.vector(theta_est_reparam), xi_probs_i_est_and_sample = cbind(xi_probs_i,simulated_sample))!=1e7){break}
     opt_theta = tryCatch(
       optim(as.vector(theta_est_reparam), fn = theta_function_converge, method = "BFGS", xi_probs_i_est_and_sample = cbind(xi_probs_i,simulated_sample), control = list(reltol = 0.01)),
       error = function(e){ 
@@ -536,37 +535,35 @@ discrepancy = 3
 #for (i in 14:n_start){
 #parameters_test_reparam = c(runif(1,0,1), as.vector(theta_list[[i]]))
 parameters_test_reparam = c(rho_est, as.vector(theta_iter[[1]]))
-#parameters_test_reparam[c(2,3,4,5,6,7,11,12,13)] = log(parameters_test_reparam[c(2,3,4,5,6,7,11,12,13)])
-#parameters_test_reparam[c(8,9,10)] = atan(parameters_test_reparam[c(8,9,10)]/2)
-#parameters_test_reparam[c(14,15,16)] = atanh(parameters_test_reparam[c(14,15,16)])
-parameters_test_reparam[c(2,3,4,5,8,9)] = log(parameters_test_reparam[c(2,3,4,5,8,9)])
-parameters_test_reparam[c(6,7)] = atan(parameters_test_reparam[c(6,7)]/2)
-parameters_test_reparam[c(10,11)] = atanh(parameters_test_reparam[c(10,11)])
+parameters_test_reparam[c(2,3,4,5,6,7,11,12,13)] = log(parameters_test_reparam[c(2,3,4,5,6,7,11,12,13)])
+parameters_test_reparam[c(8,9,10)] = atan(parameters_test_reparam[c(8,9,10)]/2)
+parameters_test_reparam[c(14,15,16)] = atanh(parameters_test_reparam[c(14,15,16)])
+#parameters_test_reparam[c(2,3,4,5,8,9)] = log(parameters_test_reparam[c(2,3,4,5,8,9)])
+#parameters_test_reparam[c(6,7)] = atan(parameters_test_reparam[c(6,7)]/2)
+#parameters_test_reparam[c(10,11)] = atanh(parameters_test_reparam[c(10,11)])
 
 init_param = parameters_test_reparam
 
 optimal = optim(init_param, neg_likelihood_exact, method = "BFGS", control = list(trace=6, REPORT = 1, reltol = 1e-5), n_rows = n_rows, data_sample = simulated_sample, n_cols = n_cols)
 
 estimated_param = rep(optimal$par[1],1+5*ncolor_test)
-#estimated_param[c(2,3,4,5,6,7,11,12,13)] = exp(optimal$par[c(2,3,4,5,6,7,11,12,13)])
-#estimated_param[c(8,9,10)] = 2*atan(optimal$par[c(8,9,10)])
-#estimated_param[c(14,15,16)] = tanh(optimal$par[c(14,15,16)])
+estimated_param[c(2,3,4,5,6,7,11,12,13)] = exp(optimal$par[c(2,3,4,5,6,7,11,12,13)])
+estimated_param[c(8,9,10)] = 2*atan(optimal$par[c(8,9,10)])
+estimated_param[c(14,15,16)] = tanh(optimal$par[c(14,15,16)])
 #sqrt(mean((estimated_param-c(0.5,parameters[c(1,2,3),]))^2))
-estimated_param[c(2,3,4,5,8,9)] = exp(optimal$par[c(2,3,4,5,8,9)])
-estimated_param[c(6,7)] = 2*atan(optimal$par[c(6,7)])
-estimated_param[c(10,11)] = tanh(optimal$par[c(10,11)])
+#estimated_param[c(2,3,4,5,8,9)] = exp(optimal$par[c(2,3,4,5,8,9)])
+#estimated_param[c(6,7)] = 2*atan(optimal$par[c(6,7)])
+#estimated_param[c(10,11)] = tanh(optimal$par[c(10,11)])
 
 estimated_param[1]
-estimated_param = matrix(estimated_param[2:11],nrow=2)
+estimated_param = matrix(estimated_param[2:16],nrow=3)
 estimated_param
 
 
 estimated_probabilities = find_back_probs(optimal$par, n_rows, simulated_sample, n_cols)
 estimated_probabilities = estimated_probabilities[,c(2,3,1)]
 
-pdf(file="C:/Users/henri/Documents/GitHub/Master-Thesis/Images/Case2_latent_4.pdf")
 image(matrix(apply(estimated_probabilities,1,which.max),nrow=n_grid), x = 1:n_grid, y = 1:n_grid, xlab = "", ylab = "", col = tim.colors(64))
-dev.off()
 
 
 values = apply(vals, MARGIN= 1, FUN = dabeley, param=estimated_param[1,])
@@ -576,11 +573,5 @@ image.plot(x=X_cor, y = y_cor, z = matrix(values,nrow=100))
 values = apply(vals, MARGIN= 1, FUN = dabeley, param=estimated_param[3,])
 values[which(values==Inf)]=0
 image.plot(x=X_cor, y = y_cor, z = matrix(values,nrow=100))
-
-
-ttime = Sys.time()
-likelihood_exact(parameters_test_reparam, n_rows, data_sample, n_cols)
-#likelihood(parameters_test_reparam)
-Sys.time() - ttime
 
 
