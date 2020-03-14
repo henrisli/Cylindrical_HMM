@@ -226,8 +226,15 @@ plot_image(spat_pros)
 
 
 #https://stackoverflow.com/questions/32183495/netcdf-files-in-r
-nc = nc_open("C:/Users/henri/Documents/20170107090000-GLOBCURRENT-L4-CUReul_15m-ALT_SUM-v03.0-fv01.0.nc")
-nc = nc_open("C:/Users/henri/Documents/20180104000000-GLOBCURRENT-L4-CUReul_15m-ALT_SUM_NRT-v03.0-fv01.0.nc")
+library(ncdf4)
+
+#nc = nc_open("C:/Users/henri/Documents/20170107090000-GLOBCURRENT-L4-CUReul_15m-ALT_SUM-v03.0-fv01.0.nc")
+#nc = nc_open("C:/Users/henri/Documents/20180104000000-GLOBCURRENT-L4-CUReul_15m-ALT_SUM_NRT-v03.0-fv01.0.nc")
+nc = nc_open("C:/Users/henri/Documents/20150106120000-GLOBCURRENT-L4-CUReul_hs-ALT_SUM-v03.0-fv01.0.nc")
+nc = nc_open("C:/Users/henri/Documents/20150406120000-GLOBCURRENT-L4-CUReul_hs-ALT_SUM-v03.0-fv01.0.nc")
+nc = nc_open("C:/Users/henri/Documents/20150705120000-GLOBCURRENT-L4-CUReul_hs-ALT_SUM-v03.0-fv01.0.nc")
+nc = nc_open("C:/Users/henri/Documents/20151003120000-GLOBCURRENT-L4-CUReul_hs-ALT_SUM-v03.0-fv01.0.nc")
+
 current = list()
 current$x = ncvar_get(nc, "lon")
 current$y = ncvar_get(nc, "lat")
@@ -235,25 +242,26 @@ current$u = ncvar_get(nc, "eastward_eulerian_current_velocity")
 current$v = ncvar_get(nc, "northward_eulerian_current_velocity")
 #current$u = ncvar_get(nc, "u")
 #current$v = ncvar_get(nc, "v")
-y_points = which(current$y>68 & current$y < 76)
-x_points = which(current$x < 8 & current$x > 0)
-#y_points = which(current$y>72 & current$y < 76)
-#x_points = which(current$x < 32 & current$x > 20)
-image(x=x_points, y = y_points, current$u[x_points,y_points])
+y_points = which(current$y>=68 & current$y <= 76)
+x_points = which(current$x <= 8 & current$x >= 0)
+
+# image(x=x_points, y = y_points, current$u[x_points,y_points])
 current$theta = atan(current$v/current$u)
 current$theta = ifelse(current$u<0&current$v<0, current$theta-pi, current$theta)
 current$theta = ifelse(current$u<0&current$v>0, current$theta + pi, current$theta)
 current$r = sqrt(current$u^2+current$v^2)
-image.plot(x=x_points, y = y_points, current$theta[x_points,y_points])
-image.plot(x=x_points, y = y_points, current$r[x_points,y_points])
+# image.plot(x=x_points, y = y_points, current$theta[x_points,y_points])
+# image.plot(x=x_points, y = y_points, current$r[x_points,y_points])
 r_sample = as.vector(current$r[x_points, y_points])
 theta_sample = as.vector(current$theta[x_points, y_points])
 df <- data.frame(x=rep(current$x[x_points],length(y_points)),y=rep(current$y[y_points],each=length(x_points)),dx=r_sample*cos(theta_sample)*3,dy=r_sample*sin(theta_sample)*3)
-ggplot(data=df, aes(x=x, y=y)) + geom_segment(aes(xend=x+dx, yend=y+dy), col = as.factor(apply(estimated_probabilities, 1, which.max)), arrow = arrow(length = unit(0.08,"cm"))) + theme(legend.position="none") + coord_fixed(ratio=1)
+ggplot(data=df, aes(x=x, y=y)) + geom_segment(aes(xend=x+dx, yend=y+dy), arrow = arrow(length = unit(0.08,"cm"))) + theme(legend.position="none") + coord_fixed(ratio=1)
+#ggplot(data=df, aes(x=x, y=y)) + geom_segment(aes(xend=x+dx, yend=y+dy), col = as.factor(apply(estimated_probabilities, 1, which.max)), arrow = arrow(length = unit(0.08,"cm"))) + theme(legend.position="none") + coord_fixed(ratio=1)
 
 
 data_set = data.frame(x = r_sample, theta = theta_sample)
-ggplot(data_set) + geom_point(aes(x=x, y = theta), col = as.factor(apply(estimated_probabilities, 1, which.max)), size = 0.1) + theme_classic()# + coord_cartesian(xlim = c(0,50))
+ggplot(data_set) + geom_point(aes(x=x, y = theta), size = 0.1) + theme_classic()# + coord_cartesian(xlim = c(0,50))
+#ggplot(data_set) + geom_point(aes(x=x, y = theta), col = as.factor(apply(estimated_probabilities, 1, which.max)), size = 0.1) + theme_classic()# + coord_cartesian(xlim = c(0,50))
 loglik_new = function(param1, x){
   return(-sum(log(apply(x, 1, dabeley_reparam, param=param1))))
 }
@@ -313,3 +321,7 @@ ggplot(data = world) +
   geom_sf() +
   coord_sf(xlim = c(20-16, 32+16), ylim = c(72-4, 76+4), expand = FALSE) + scale_x_continuous(breaks = seq(-32,40,8)) + scale_y_continuous(breaks = seq(64,80,2)) + geom_segment(data = df, aes(x = x, y = y, xend=x+dx, yend=y+dy), arrow = arrow(length = unit(0.1,"cm"))) + xlab("") + ylab("")
 dev.off()
+
+ggplot(data = world) +
+  geom_sf() +
+  coord_sf(xlim = c(10, 60), ylim = c(68, 80), expand = FALSE) + scale_x_continuous(breaks = seq(28,46,18)) + scale_y_continuous(breaks = seq(72,78,6))

@@ -26,78 +26,9 @@ get.neighbors <- function(rw) {
 # Not exactly sure if the simulation is working...
 
 neighbor_list = apply(addresses,1, get.neighbors) # Returns a list with neighbors
-k=3
-ncolor = 3
+k=4
+ncolor = 4
 
-# simulate_posterior = function(beta, l_0, iterations, k){
-#   l = l_0
-#   n = length(l_0)
-#   for (j in 1:iterations){
-#     proposed_site = sample(1:n,1)
-#     neighbor = neighbor_matrix[[1]][proposed_site]
-#     for (k_0 in 2:k){neighbor = c(neighbor, neighbor_matrix[[k_0]][proposed_site])}
-#     #print(neighbor)
-#     p = exp(beta*neighbor)/sum(exp(beta*neighbor))
-#     old_i = l[proposed_site]
-#     new_i = which(rmultinom(1,1,p)==1)
-#     neighbor_matrix[[old_i]][neighbor_list[[proposed_site]]] = neighbor_matrix[[old_i]][neighbor_list[[proposed_site]]] - 1
-#     neighbor_matrix[[new_i]][neighbor_list[[proposed_site]]] = neighbor_matrix[[new_i]][neighbor_list[[proposed_site]]] + 1
-#     l[proposed_site] = new_i
-#   }
-#   return(l)
-# }
-
-# mat = matrix(0,ncol = n_grid^2, nrow = 9)
-# rho = 1.2
-# 
-# for (i in 1:9){
-#   neighbor_matrix = list(matrix(0,n_grid,n_grid))
-#   for (mat_count in 2:k){
-#     neighbor_matrix[[mat_count]] = matrix(0,n_grid,n_grid)}
-#   init_l = sample(1:k, replace=T, size = n_grid^2)
-#   for (grid_count in 1:n_grid^2){
-#     neighbor_matrix[[init_l[grid_count]]][neighbor_list[[grid_count]]] =  neighbor_matrix[[init_l[grid_count]]][neighbor_list[[grid_count]]]+1
-#   }
-#   mat[i,] = init_l
-#   
-#   mat[i,] = simulate_posterior(rho, mat[i,], n_grid^2*40, k)
-# }
-# x = rep(seq(1,n_grid),n_grid)
-# y = rep(seq(1,n_grid),each = n_grid)
-# plot_image <- function(l){
-#   mtrx3d <- data.frame(x = x, y = y, z=as.vector(l))
-#   mtrx.melt <- melt(mtrx3d, id.vars = c("x","y"), measure.vars = "z")
-#   mtrx.melt$value = as.factor(mtrx.melt$value)
-#   #return(ggplot(mtrx.melt, aes(x = x, y = y, fill = value)) +
-#   #         geom_raster() + coord_fixed(ratio=1)+ scale_fill_manual("Rock type", values=c("dark blue","dark red", "dark green")) +  theme(legend.position = "none", axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.y = element_text(size=4), axis.text.x = element_text(size=4)))
-#   return(ggplot(mtrx.melt, aes(x = x, y = y, fill = value)) +
-#            geom_raster() + coord_fixed(ratio=1)+ scale_fill_discrete() +  theme(legend.position = "none", axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.y = element_text(size=4), axis.text.x = element_text(size=4)))
-# }
-# p1 = plot_image(mat[1,])
-# p2 = plot_image(mat[2,])
-# p3 = plot_image(mat[3,])
-# p4 = plot_image(mat[4,])
-# p5 = plot_image(mat[5,])
-# p6 = plot_image(mat[6,])
-# p7 = plot_image(mat[7,])
-# p8 = plot_image(mat[8,])
-# p9 = plot_image(mat[9,])
-# 
-# ggarrange(p1, p2, p3, p4, p5, p6, p7, p8, p9, nrow = 3, ncol = 3)
-
-##
-#set.seed(12345)
-rho = 0.5
-potts_param <- c(rep(0, ncolor), rho)
-x_potts <- matrix(1, nrow = n_grid, ncol = n_grid)
-foo <- packPotts(x_potts, ncolor)
-out <- potts(foo, potts_param, nbatch = 10)
-pdf(file="C:/Users/henri/Documents/GitHub/Master-Thesis/Images/Case1_latent.pdf")
-image(unpackPotts(out$final), x = 1:24, y = 1:24, xlab = "", ylab = "", col = tim.colors(64))
-dev.off()
-
-spat_pros = as.vector(unpackPotts(out$final))
-plot_image(spat_pros)
 
 dabeley <- function(param, x){
   alpha = param[1]
@@ -139,10 +70,10 @@ loglikelihood <- function(beta){
   return(-result)
 }
 optimal = optim(1,loglikelihood, lower = 0, method = "Brent", upper = 2*log(1+sqrt(ncolor)))
-beta = optimal$par
+optimal$par
 
 
-ncolor = 3
+ncolor = 4
 
 # Initialize parameters
 
@@ -248,7 +179,7 @@ full_likelihood = function(parameter){
 
 #composite_likelihood = list(Inf)
 ttime = Sys.time()
-n_start = 50
+n_start = 10
 composite_likelihood<- rep(1000000, n_start)
 rho_vec = runif(n_start, 0, log(1+sqrt(ncolor)))
 theta_list = list()
@@ -522,46 +453,59 @@ image.plot(x=X_cor, y = y_cor, z = matrix(values,nrow=100))
 library(prodlim)
 n_rows = 1
 n_cols = 32
-ncolor_test = 2
-xi_A_n = matrix(1:2, ncol = 1)
+ncolor_test = 3
+# xi_A_n = matrix(1:2, ncol = 1)
+# for (i in 1:(n_rows)){
+#   xi_A_n = cbind(rbind(xi_A_n, xi_A_n), rep(1:2, each = 2^i))
+# }
+# xi_A_n = matrix(1:3, ncol = 1)
+# for (i in 1:(n_rows)){
+#   xi_A_n = cbind(rbind(xi_A_n, xi_A_n, xi_A_n), rep(1:3, each = 3^i))
+# }
+xi_A_n = matrix(1:4, ncol = 1)
 for (i in 1:(n_rows)){
-  xi_A_n = cbind(rbind(xi_A_n, xi_A_n), rep(1:2, each = 2^i))
+  xi_A_n = cbind(rbind(xi_A_n, xi_A_n,xi_A_n, xi_A_n), rep(1:4, each = 4^i))
 }
 
 
-discrepancy = 3
-#logliks <- rep(NA,n_start)
-#est_params <- matrix(NA, ncol = 1+5*ncolor_test, nrow = n_start)
-#for (i in 14:n_start){
-#parameters_test_reparam = c(runif(1,0,1), as.vector(theta_list[[i]]))
 parameters_test_reparam = c(rho_est, as.vector(theta_iter[[1]]))
+
+# parameters_test_reparam[c(2,3,4,5,8,9)] = log(parameters_test_reparam[c(2,3,4,5,8,9)])
+# parameters_test_reparam[c(6,7)] = atan(parameters_test_reparam[c(6,7)]/2)
+# parameters_test_reparam[c(10,11)] = atanh(parameters_test_reparam[c(10,11)])
+
 parameters_test_reparam[c(2,3,4,5,6,7,11,12,13)] = log(parameters_test_reparam[c(2,3,4,5,6,7,11,12,13)])
 parameters_test_reparam[c(8,9,10)] = atan(parameters_test_reparam[c(8,9,10)]/2)
 parameters_test_reparam[c(14,15,16)] = atanh(parameters_test_reparam[c(14,15,16)])
-#parameters_test_reparam[c(2,3,4,5,8,9)] = log(parameters_test_reparam[c(2,3,4,5,8,9)])
-#parameters_test_reparam[c(6,7)] = atan(parameters_test_reparam[c(6,7)]/2)
-#parameters_test_reparam[c(10,11)] = atanh(parameters_test_reparam[c(10,11)])
+
+# parameters_test_reparam[c(2,3,4,5,6,7,8,9,14,15,16,17)] = log(parameters_test_reparam[c(2,3,4,5,6,7,8,9,14,15,16,17)])
+# parameters_test_reparam[c(10,11,12,13)] = atan(parameters_test_reparam[c(10,11,12,13)]/2)
+# parameters_test_reparam[c(18,19,20,21)] = atanh(parameters_test_reparam[c(18,19,20,21)])
 
 init_param = parameters_test_reparam
 
 optimal = optim(init_param, neg_likelihood_exact, method = "BFGS", control = list(trace=6, REPORT = 1, reltol = 1e-5), n_rows = n_rows, data_sample = simulated_sample, n_cols = n_cols)
 
 estimated_param = rep(optimal$par[1],1+5*ncolor_test)
-estimated_param[c(2,3,4,5,6,7,11,12,13)] = exp(optimal$par[c(2,3,4,5,6,7,11,12,13)])
-estimated_param[c(8,9,10)] = 2*atan(optimal$par[c(8,9,10)])
-estimated_param[c(14,15,16)] = tanh(optimal$par[c(14,15,16)])
-#sqrt(mean((estimated_param-c(0.5,parameters[c(1,2,3),]))^2))
+
 #estimated_param[c(2,3,4,5,8,9)] = exp(optimal$par[c(2,3,4,5,8,9)])
 #estimated_param[c(6,7)] = 2*atan(optimal$par[c(6,7)])
 #estimated_param[c(10,11)] = tanh(optimal$par[c(10,11)])
 
+estimated_param[c(2,3,4,5,6,7,11,12,13)] = exp(optimal$par[c(2,3,4,5,6,7,11,12,13)])
+estimated_param[c(8,9,10)] = 2*atan(optimal$par[c(8,9,10)])
+estimated_param[c(14,15,16)] = tanh(optimal$par[c(14,15,16)])
+
+# estimated_param[c(2,3,4,5,6,7,8,9,14,15,16,17)] = exp(optimal$par[c(2,3,4,5,6,7,8,9,14,15,16,17)])
+# estimated_param[c(10,11,12,13)] = 2*atan(optimal$par[c(10,11,12,13)])
+# estimated_param[c(18,19,20,21)] = tanh(optimal$par[c(18,19,20,21)])
+
 estimated_param[1]
-estimated_param = matrix(estimated_param[2:16],nrow=3)
+estimated_param = matrix(estimated_param[2:(5*ncolor_test+1)],nrow=ncolor_test)
 estimated_param
 
 
 estimated_probabilities = find_back_probs(optimal$par, n_rows, simulated_sample, n_cols)
-estimated_probabilities = estimated_probabilities[,c(2,3,1)]
 
 image(matrix(apply(estimated_probabilities,1,which.max),nrow=n_grid), x = 1:n_grid, y = 1:n_grid, xlab = "", ylab = "", col = tim.colors(64))
 
@@ -573,5 +517,6 @@ image.plot(x=X_cor, y = y_cor, z = matrix(values,nrow=100))
 values = apply(vals, MARGIN= 1, FUN = dabeley, param=estimated_param[3,])
 values[which(values==Inf)]=0
 image.plot(x=X_cor, y = y_cor, z = matrix(values,nrow=100))
-
-
+values = apply(vals, MARGIN= 1, FUN = dabeley, param=estimated_param[4,])
+values[which(values==Inf)]=0
+image.plot(x=X_cor, y = y_cor, z = matrix(values,nrow=100))

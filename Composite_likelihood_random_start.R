@@ -7,7 +7,7 @@ library(fields)
 library(potts)
 library(rootSolve)
 
-n_grid = 24
+n_grid = 32
 mat_grid <- matrix(seq(n_grid^2), n_grid)
 
 addresses <- expand.grid(x = 1:n_grid, y = 1:n_grid)
@@ -106,7 +106,7 @@ dabeley <- function(param, x){
   kappa=param[4]
   lambda=param[5]
   return(alpha*beta^alpha/(2*pi*cosh(kappa))*(1+lambda*sin(x[2]-mu))*x[1]^(alpha-1)*exp(-(beta*x[1])^alpha*(1-tanh(kappa)*cos(x[2]-mu))))}
-X_cor = seq(0,5,l=100)
+X_cor = seq(0,0.5,l=100)
 y_cor = seq(-pi,pi,l=100)
 vals = cbind(rep(X_cor,100), rep(y_cor,each=100))
 parameters = rbind(c(2,1,0,0,1), c(2,1,0,0,-1), c(2,0.6,0,1.5,0))
