@@ -1,4 +1,4 @@
-rho = 0.5
+rho = 0.95
 potts_param <- c(rep(0, ncolor), rho)
 
 parameters = rbind(c(2,1,0,0,1), c(2,1,0,0,-1), c(2,0.6,0,1.5,0))

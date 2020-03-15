@@ -7,7 +7,7 @@ library(fields)
 library(potts)
 library(rootSolve)
 
-n_grid = 32
+n_grid = 24
 mat_grid <- matrix(seq(n_grid^2), n_grid)
 
 addresses <- expand.grid(x = 1:n_grid, y = 1:n_grid)
@@ -26,8 +26,8 @@ get.neighbors <- function(rw) {
 # Not exactly sure if the simulation is working...
 
 neighbor_list = apply(addresses,1, get.neighbors) # Returns a list with neighbors
-k=4
-ncolor = 4
+k=2
+ncolor = 2
 
 
 dabeley <- function(param, x){
@@ -73,7 +73,7 @@ optimal = optim(1,loglikelihood, lower = 0, method = "Brent", upper = 2*log(1+sq
 optimal$par
 
 
-ncolor = 4
+ncolor = 3
 
 # Initialize parameters
 
@@ -179,7 +179,7 @@ full_likelihood = function(parameter){
 
 #composite_likelihood = list(Inf)
 ttime = Sys.time()
-n_start = 10
+n_start = 5
 composite_likelihood<- rep(1000000, n_start)
 rho_vec = runif(n_start, 0, log(1+sqrt(ncolor)))
 theta_list = list()
@@ -257,7 +257,7 @@ for (start_point in 1:n_start){
   }
   print(start_point)
 }
-
+composite_likelihood
 for (start_point in 1:n_start){
   conv_exit = F
   while(T){
@@ -311,7 +311,6 @@ for (start_point in 1:n_start){
       composite_likelihood[start_point] = full_likelihood(c(opt_rho$par, opt_theta$par))
       conv_exit = T
       break}else{composite_likelihood[start_point] = full_likelihood(c(opt_rho$par, opt_theta$par))}
-    # if(abs(composite_likelihood[[iteration]] - composite_likelihood[[iteration-1]])<10){break}
   }
   if (conv_exit){
     theta_list_converged[[converged]] = c(opt_rho$par, opt_theta$par)
@@ -321,139 +320,19 @@ for (start_point in 1:n_start){
   print(start_point)
 }
 
-#plot(sapply(theta_list, function(i) sum(abs(i-parameters)^2)))
-#plot(sapply(theta_list, function(i) sum(abs(i-parameters))))
-plot(composite_likelihood)
+composite_likelihood
 min.val = which.min(composite_likelihood)
 theta_iter = list(theta_list[[min.val]])
 rho_iter = list(rho_vec[min.val])
-composite_likelihood_iter = list(composite_likelihood[min.val])
-iteration = 1
-rho_est = rho_iter[[iteration]]
-while(T){
-  theta_est = theta_iter[[iteration]]
-  rho_est = rho_iter[[iteration]]
-  potts_prob = apply(xi_A, 1, function(i) exp(rho_est*ifelse(i[1]==i[2],1,0)))
-  potts_prob = potts_prob/sum(potts_prob)
-  xi_probs_i = matrix(0, nrow = n_grid^2, ncol = ncolor)
-  for (i in 1:A){
-    for (j in 1:ncolor^2){
-      xi_probs[i,j] = potts_prob[j]*dabeley(theta_est[xi_A[j,1],], as.vector(simulated_sample[A_list[[i]][1],]))*dabeley(theta_est[xi_A[j,2],], as.vector(simulated_sample[A_list[[i]][2],]))
-    }
-    xi_probs[i,] = xi_probs[i,]/sum(xi_probs[i,])
-  }
-  for (i in 1:A){
-    for (j in 1:ncolor^2){
-      xi_probs_i[A_list[[i]][1],xi_A[j,1]] = xi_probs_i[A_list[[i]][1],xi_A[j,1]] + xi_probs[i,j]
-      xi_probs_i[A_list[[i]][2],xi_A[j,2]] = xi_probs_i[A_list[[i]][2],xi_A[j,2]] + xi_probs[i,j]
-    }
-  }
-  xi_probs_i_normal = matrix(0, nrow = n_grid^2, ncol = ncolor)
-  for (i in 1:n_grid^2){xi_probs_i_normal[i,] = xi_probs_i[i,]/sum(xi_probs_i[i,])}
-  #image.plot(matrix(apply(xi_probs_i_normal,1,function(i) max(i)*(1-max(i))), nrow = n_grid))
-  iteration = iteration + 1
-  opt_rho = optim(rho_est,rho_function, xi_probs_est = xi_probs, method = "Brent", lower = 0, upper = log(1+sqrt(ncolor)))
-  rho_iter[[iteration]] = opt_rho$par
-  print(opt_rho$par)
-  theta_est_reparam=theta_est
-  theta_est_reparam[,c(1,2,4)] = log(theta_est_reparam[,c(1,2,4)])
-  theta_est_reparam[,3] = tan(theta_est_reparam[,3]/2)
-  theta_est_reparam[,5] = atanh(theta_est_reparam[,5])
-  opt_theta = optim(as.vector(theta_est_reparam), fn = theta_function, method = "BFGS", xi_probs_i_est_and_sample = cbind(xi_probs_i,simulated_sample), control = list(trace=6, REPORT=1, reltol = 1e-5))
-  #opt_theta = optim(as.vector(theta_est_reparam), fn = theta_function, xi_probs_i_est_and_sample = cbind(xi_probs_i,simulated_sample), control = list(reltol = 1e-4))
-  theta_est_new=matrix(opt_theta$par,nrow=ncolor)
-  theta_est_new[,c(1,2,4)] = exp(theta_est_new[,c(1,2,4)])
-  theta_est_new[,3] = 2*atan(theta_est_new[,3])
-  theta_est_new[,5] = tanh(theta_est_new[,5])
-  theta_iter[[iteration]] = theta_est_new
-  composite_likelihood_iter[[iteration]] = full_likelihood(c(opt_rho$par, opt_theta$par))
-  #composite_likelihood_iter[[iteration]] = rho_function(xi_probs_est = xi_probs, rho_val = rho_est) + opt_theta$value
-  print(composite_likelihood_iter[[iteration]])
-  if(abs(composite_likelihood_iter[[iteration]] - composite_likelihood_iter[[iteration-1]])/composite_likelihood_iter[[iteration-1]]<0.000001){break}
-}
-#opt_test = optim(c(opt_rho$par, opt_theta$par), method = "BFGS", fn = full_likelihood, control = list(trace = 6, REPORT = 1, reltol =1e-5))
-opt_test = optim(theta_list_converged[[which.min(likelihood_converged)]], method = "BFGS", fn = full_likelihood, control = list(trace = 6, REPORT = 1, reltol =1e-5))
-#opt_test_rho = optim(opt_rho$par, method = "BFGS", fn = full_likelihood_rho_only, control = list(trace = 6, REPORT = 1, reltol =1e-5), parameter = opt_theta$par)
-rho_estimate = opt_test$par[1+5*ncolor]
-theta_estimate = matrix(opt_test$par[1:(5*ncolor)], ncol = 5)
-theta_estimate[,c(1,2,4)] = exp(theta_estimate[,c(1,2,4)])
-theta_estimate[,3]=2*atan(theta_estimate[,3])
-theta_estimate[,5]=tanh(theta_estimate[,5])
-Sys.time() - ttime
-
-grad_1 = numDeriv::grad(full_likelihood, c(opt_rho$par, opt_theta$par))
-hess_1 = numDeriv::hessian(full_likelihood, c(opt_rho$par, opt_theta$par))
-sum(diag(grad_1%*%t(grad_1)%*%solve(hess_1)))
-grad_2 = numDeriv::grad(full_likelihood, c(opt_test_rho$par, opt_theta$par))
-hess_2 = numDeriv::hessian(full_likelihood, c(opt_test_rho$par, opt_theta$par))
-sum(diag((grad_2)%*%t(grad_2)%*%solve(hess_2)))
-grad_3 = numDeriv::grad(full_likelihood, opt_test$par)
-hess_3 = numDeriv::hessian(full_likelihood, opt_test$par)
-sum(diag((grad_3)%*%t(grad_3)%*%solve(hess_3)))
-grad_4 = rootSolve::gradient(theta_function, opt_theta$par, xi_probs_i_est_and_sample = cbind(xi_probs_i,simulated_sample))
-#hess_4 = jacobian(gradient_func, opt_theta$par, xi_probs_i_est_and_sample = cbind(xi_probs_i,simulated_sample))
-sum(diag((grad_4)%*%t(grad_4)%*%solve(hess_4)))
-
-
-
-pdf(file="C:/Users/henri/Documents/GitHub/Master-Thesis/Images/Case1_latent_composite.pdf")
-image(matrix(apply(xi_probs_i_normal,1,which.max),nrow=n_grid), x = 1:24, y = 1:24, xlab = "", ylab = "", col = tim.colors(64))
-dev.off()
-plot_image(apply(xi_probs_i_normal,1,which.max))
-plot_image(spat_pros_test)
-spat_pros_2 = spat_pros_test
-spat_pros_2[which(spat_pros_test==1)] = 2
-spat_pros_2[which(spat_pros_test==2)] = 3
-spat_pros_2[which(spat_pros_test==3)] = 1
-plot_image(spat_pros_2)
-
-# 3: blue, 2: green, 1: red
-estimated_xi = apply(xi_probs_i_normal,1,which.max)
-ggplot(data.frame(x = simulated_sample[,1], theta = simulated_sample[,2])) + geom_point(aes(x=x, y = theta, col = as.factor(estimated_xi), shape = as.factor(spat_pros))) + theme_bw() + theme(legend.position = "none")
-
-plot(sapply(theta_iter, function(i) mean(abs(i-parameters)^2)))
-plot(sapply(theta_iter, function(i) mean(abs(i-parameters))))
-plot(unlist(composite_likelihood_iter))
-
-theta_max = theta_iter[[iteration]]
-theta_max = theta_estimate
-
-X_cor = seq(0,5,l=100)
-y_cor = seq(-pi,pi,l=100)
-vals = cbind(rep(X_cor,100), rep(y_cor,each=100))
-for (i in 1:ncolor){
-  values = apply(vals, MARGIN= 1, FUN = dabeley, param=theta_max[i,])
-  image.plot(x=X_cor, y = y_cor, z = matrix(values,nrow=100))
-  if(i<=3){
-    values = apply(vals, MARGIN= 1, FUN = dabeley, param=parameters[i,])
-    image.plot(x=X_cor, y = y_cor, z = matrix(values,nrow=100))}}
-
-# With only one class
-
-loglik <- function(param, X, theta){
-  alpha = param[1]
-  beta = param[2]
-  mu = param[3]
-  kappa = param[4]
-  lambda = param[5]
-  if(alpha<0|beta<0|mu<(-pi)|mu>pi|kappa<0|abs(lambda)>1){return(Inf)}
-  return(-((alpha-1)*sum(log(X)) - beta^alpha*sum(X^alpha*(1-tanh(kappa)*cos(theta-mu)))+sum(log(1+lambda*sin(theta-mu)))+n_grid*(alpha*log(beta)+log(alpha)-log(2*pi*cosh(kappa)))))
-}
-
-init_par = c(1.4,10,0,0.6,0)
-ans = optim(init_par, loglik, X = simulated_sample[,1], theta = simulated_sample[,2], control = list(trace=6, maxit=10000))
-values = apply(vals, MARGIN= 1, FUN = dabeley, param=ans$par)
-image.plot(x=X_cor, y = y_cor, z = matrix(values,nrow=100))
-
-
+rho_est = rho_iter[[1]]
 
 
 # Exact likelihood
 
 library(prodlim)
 n_rows = 1
-n_cols = 32
-ncolor_test = 3
+n_cols = 24
+ncolor_test = 4
 # xi_A_n = matrix(1:2, ncol = 1)
 # for (i in 1:(n_rows)){
 #   xi_A_n = cbind(rbind(xi_A_n, xi_A_n), rep(1:2, each = 2^i))
@@ -474,31 +353,33 @@ parameters_test_reparam = c(rho_est, as.vector(theta_iter[[1]]))
 # parameters_test_reparam[c(6,7)] = atan(parameters_test_reparam[c(6,7)]/2)
 # parameters_test_reparam[c(10,11)] = atanh(parameters_test_reparam[c(10,11)])
 
-parameters_test_reparam[c(2,3,4,5,6,7,11,12,13)] = log(parameters_test_reparam[c(2,3,4,5,6,7,11,12,13)])
-parameters_test_reparam[c(8,9,10)] = atan(parameters_test_reparam[c(8,9,10)]/2)
-parameters_test_reparam[c(14,15,16)] = atanh(parameters_test_reparam[c(14,15,16)])
+# parameters_test_reparam[c(2,3,4,5,6,7,11,12,13)] = log(parameters_test_reparam[c(2,3,4,5,6,7,11,12,13)])
+# parameters_test_reparam[c(8,9,10)] = atan(parameters_test_reparam[c(8,9,10)]/2)
+# parameters_test_reparam[c(14,15,16)] = atanh(parameters_test_reparam[c(14,15,16)])
 
-# parameters_test_reparam[c(2,3,4,5,6,7,8,9,14,15,16,17)] = log(parameters_test_reparam[c(2,3,4,5,6,7,8,9,14,15,16,17)])
-# parameters_test_reparam[c(10,11,12,13)] = atan(parameters_test_reparam[c(10,11,12,13)]/2)
-# parameters_test_reparam[c(18,19,20,21)] = atanh(parameters_test_reparam[c(18,19,20,21)])
+parameters_test_reparam[c(2,3,4,5,6,7,8,9,14,15,16,17)] = log(parameters_test_reparam[c(2,3,4,5,6,7,8,9,14,15,16,17)])
+parameters_test_reparam[c(10,11,12,13)] = atan(parameters_test_reparam[c(10,11,12,13)]/2)
+parameters_test_reparam[c(18,19,20,21)] = atanh(parameters_test_reparam[c(18,19,20,21)])
 
 init_param = parameters_test_reparam
 
 optimal = optim(init_param, neg_likelihood_exact, method = "BFGS", control = list(trace=6, REPORT = 1, reltol = 1e-5), n_rows = n_rows, data_sample = simulated_sample, n_cols = n_cols)
 
+write.table(optimal$par, "C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_2015_fall_4.csv")
+
 estimated_param = rep(optimal$par[1],1+5*ncolor_test)
 
-#estimated_param[c(2,3,4,5,8,9)] = exp(optimal$par[c(2,3,4,5,8,9)])
-#estimated_param[c(6,7)] = 2*atan(optimal$par[c(6,7)])
-#estimated_param[c(10,11)] = tanh(optimal$par[c(10,11)])
+# estimated_param[c(2,3,4,5,8,9)] = exp(optimal$par[c(2,3,4,5,8,9)])
+# estimated_param[c(6,7)] = 2*atan(optimal$par[c(6,7)])
+# estimated_param[c(10,11)] = tanh(optimal$par[c(10,11)])
 
-estimated_param[c(2,3,4,5,6,7,11,12,13)] = exp(optimal$par[c(2,3,4,5,6,7,11,12,13)])
-estimated_param[c(8,9,10)] = 2*atan(optimal$par[c(8,9,10)])
-estimated_param[c(14,15,16)] = tanh(optimal$par[c(14,15,16)])
+# estimated_param[c(2,3,4,5,6,7,11,12,13)] = exp(optimal$par[c(2,3,4,5,6,7,11,12,13)])
+# estimated_param[c(8,9,10)] = 2*atan(optimal$par[c(8,9,10)])
+# estimated_param[c(14,15,16)] = tanh(optimal$par[c(14,15,16)])
 
-# estimated_param[c(2,3,4,5,6,7,8,9,14,15,16,17)] = exp(optimal$par[c(2,3,4,5,6,7,8,9,14,15,16,17)])
-# estimated_param[c(10,11,12,13)] = 2*atan(optimal$par[c(10,11,12,13)])
-# estimated_param[c(18,19,20,21)] = tanh(optimal$par[c(18,19,20,21)])
+estimated_param[c(2,3,4,5,6,7,8,9,14,15,16,17)] = exp(optimal$par[c(2,3,4,5,6,7,8,9,14,15,16,17)])
+estimated_param[c(10,11,12,13)] = 2*atan(optimal$par[c(10,11,12,13)])
+estimated_param[c(18,19,20,21)] = tanh(optimal$par[c(18,19,20,21)])
 
 estimated_param[1]
 estimated_param = matrix(estimated_param[2:(5*ncolor_test+1)],nrow=ncolor_test)

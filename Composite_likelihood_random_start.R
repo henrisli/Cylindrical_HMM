@@ -7,7 +7,7 @@ library(fields)
 library(potts)
 library(rootSolve)
 
-n_grid = 32
+n_grid = 24
 mat_grid <- matrix(seq(n_grid^2), n_grid)
 
 addresses <- expand.grid(x = 1:n_grid, y = 1:n_grid)
@@ -26,8 +26,8 @@ get.neighbors <- function(rw) {
 # Not exactly sure if the simulation is working...
 
 neighbor_list = apply(addresses,1, get.neighbors) # Returns a list with neighbors
-k=3
-ncolor = 3
+k=2
+ncolor = 2
 
 # simulate_posterior = function(beta, l_0, iterations, k){
 #   l = l_0
@@ -167,7 +167,7 @@ optimal = optim(1,loglikelihood, lower = 0, method = "Brent", upper = 2*log(1+sq
 beta = optimal$par
 
 
-ncolor = 3
+ncolor = 4
 # Initialize parameters
 rho_list = list(0.5)
 #rho_list = list(rho)
