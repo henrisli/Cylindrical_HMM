@@ -5,8 +5,8 @@ library(ncdf4)
 #nc = nc_open("C:/Users/henri/Documents/20180104000000-GLOBCURRENT-L4-CUReul_15m-ALT_SUM_NRT-v03.0-fv01.0.nc")
 nc = nc_open("C:/Users/henri/Documents/19950106120000-GLOBCURRENT-L4-CUReul_hs-ALT_SUM-v03.0-fv01.0.nc")
 nc = nc_open("C:/Users/henri/Documents/19950406120000-GLOBCURRENT-L4-CUReul_hs-ALT_SUM-v03.0-fv01.0.nc")
-nc = nc_open("C:/Users/henri/Documents/20150705120000-GLOBCURRENT-L4-CUReul_hs-ALT_SUM-v03.0-fv01.0.nc")
-nc = nc_open("C:/Users/henri/Documents/20151003120000-GLOBCURRENT-L4-CUReul_hs-ALT_SUM-v03.0-fv01.0.nc")
+nc = nc_open("C:/Users/henri/Documents/20050705120000-GLOBCURRENT-L4-CUReul_hs-ALT_SUM-v03.0-fv01.0.nc")
+nc = nc_open("C:/Users/henri/Documents/20051003120000-GLOBCURRENT-L4-CUReul_hs-ALT_SUM-v03.0-fv01.0.nc")
 
 current = list()
 current$x = ncvar_get(nc, "lon")
@@ -18,7 +18,7 @@ current$v = ncvar_get(nc, "northward_eulerian_current_velocity")
 # y_points = which(current$y>=68 & current$y <= 76)
 # x_points = which(current$x <= 8 & current$x >= 0)
 y_points = which(current$y>=66 & current$y <= 72)
-x_points = which(current$x <= 8 & current$x >= 2)
+x_points = which(current$x <= 12 & current$x >= -3)[floor(1:24)*5/2]
 
 # image(x=x_points, y = y_points, current$u[x_points,y_points])
 current$theta = atan(current$v/current$u)
@@ -30,7 +30,7 @@ current$r = sqrt(current$u^2+current$v^2)
 r_sample = as.vector(current$r[x_points, y_points])
 theta_sample = as.vector(current$theta[x_points, y_points])
 df <- data.frame(x=rep(current$x[x_points],length(y_points)),y=rep(current$y[y_points],each=length(x_points)),dx=r_sample*cos(theta_sample)*3,dy=r_sample*sin(theta_sample)*3)
-ggplot(data=df, aes(x=x, y=y)) + geom_segment(aes(xend=x+dx, yend=y+dy), arrow = arrow(length = unit(0.08,"cm"))) + theme_bw(base_size=20) + coord_fixed(ratio=1) + xlab("Longitude") + ylab("Latitude")
+ggplot(data=df, aes(x=x, y=y)) + geom_segment(aes(xend=x+dx, yend=y+dy), arrow = arrow(length = unit(0.08,"cm"))) + theme_bw(base_size=20)# + coord_fixed(ratio=1) + xlab("Longitude") + ylab("Latitude")
 #ggplot(data=df, aes(x=x, y=y, col = as.factor(apply(estimated_probabilities, 1, which.max)))) + geom_segment(aes(xend=x+dx, yend=y+dy), arrow = arrow(length = unit(0.08,"cm"))) + theme_bw(base_size=20) + theme(legend.position="none") + coord_fixed(ratio=1) + xlab("Longitude") + ylab("Latitude") + scale_color_manual(values = colorss)
 
 
@@ -38,6 +38,11 @@ data_set = data.frame(x = r_sample, theta = theta_sample)
 ggplot(data_set) + geom_point(aes(x=x, y = theta)) + theme_classic(base_size=20) + xlab("X") + ylab(expression(paste(Phi))) + coord_cartesian(xlim = c(0,0.5))
 #ggplot(data_set) + geom_point(aes(x=x, y = theta, col = as.factor(apply(estimated_probabilities, 1, which.max)))) + theme_classic(base_size=20) + theme(legend.position = "none") + xlab("X") + ylab(expression(paste(Phi))) + coord_cartesian(xlim = c(0,0.5)) + scale_color_manual(values = colorss)
 simulated_sample = as.matrix(data_set)
+
+
+par_est = read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_2015_fall_5.csv")[,1]
+estimated_probabilities = find_back_probs(par_est, n_rows, simulated_sample, n_cols)
+
 
 loglik_new = function(param1, x){
   return(-sum(log(apply(x, 1, dabeley_reparam, param=param1))))
@@ -90,8 +95,8 @@ ggplotColours <- function(n = 6, h = c(0, 360) + 15){
   hcl(h = (seq(h[1], h[2], length = n)), c = 100, l = 65)
 }
 
-#colorss = ggplotColours(n=3)[1:2]
-colorss = ggplotColours(n=6)[c(1,3,5,2)]
+colorss = ggplotColours(n=3)
+colorss = ggplotColours(n=6)[c(1,3,5,2,6)]
 
 # index_2 = 1:576
 # for (i in 1:220){

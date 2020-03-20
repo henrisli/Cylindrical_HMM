@@ -19,7 +19,7 @@ parameter_estimates_1 = matrix(NA, nrow = n_replicates, ncol = 16)
 true_field = matrix(NA, nrow = n_replicates, ncol = n_grid^2)
 estimated_field_1 = matrix(NA, nrow = n_replicates, ncol = n_grid^2)
 
-for (rep_num in 1:n_replicates){
+for (rep_num in 103:n_replicates){
   # Draw random field
   x_potts <- matrix(1, nrow = n_grid, ncol = n_grid)
   foo <- packPotts(x_potts, ncolor)
@@ -85,7 +85,7 @@ for (rep_num in 1:n_replicates){
   
   estimated_probabilities = find_back_probs(optimal$par, n_rows, simulated_sample, n_cols)
   estimated_field_1[rep_num, ] = apply(estimated_probabilities, 1, which.max)
-  write.table(parameter_estimates_1[1:rep_num,], "C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_case1_02.csv")
+  write.table(parameter_estimates_1[1:rep_num,], "C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_case1_095.csv")
   print(rep_num)
 }
 
@@ -93,13 +93,13 @@ elapsed_time_1[which(elapsed_time_1>10)] = elapsed_time_1[which(elapsed_time_1>1
 
 mean(elapsed_time_1, na.rm = T)
 
-matrix(apply(parameter_estimates_1[,2:16], 2, mean),nrow=3)
+matrix(apply(parameter_estimates_1[-22,2:16], 2, mean),nrow=3)
 mean(parameter_estimates_1[,1])
 
 1-(length(which(estimated_field_1 != true_field))/n_replicates)/(24*24)
 
 true_parameters = c(rho, as.vector(parameters))
-mean(apply(parameter_estimates_1, 1, function(i) sqrt(mean((i-true_parameters)^2))), na.rm = T)
+mean(apply(parameter_estimates_1[-22,], 1, function(i) sqrt(mean((i-true_parameters)^2))), na.rm = T)
 
 
 df = data.frame(y = as.vector(parameter_estimates_1))
@@ -107,7 +107,7 @@ df$x=c(rep(NA,n_replicates),rep(rep(1:3,each=n_replicates),5))
 df$x = as.factor(df$x)
 df$supp = c(rep("rho", n_replicates), rep(c("alpha", "beta", "mu", "kappa", "lambda"), each =n_replicates*3))
 
-#pdf(file="C:/Users/henri/Documents/GitHub/Master-Thesis/Images/Case1_02_bias_weissvm.pdf")
+#pdf(file="C:/Users/henri/Documents/GitHub/Master-Thesis/Images/Case1_095_bias_weissvm.pdf")
 ggplot(df, aes(x=supp, y=y, fill=x)) +  geom_boxplot() + labs(fill = "Class") + scale_x_discrete(labels=c(expression(paste(alpha)),expression(paste(beta)),expression(paste(mu)),expression(paste(kappa)), expression(paste(lambda)), expression(paste(rho))), limits = c("alpha", "beta", "mu", "kappa", "lambda", "rho")) + xlab("Parameter") + ylab("Value") + theme_classic(base_size=20) + coord_cartesian(ylim=c(-2,6))
 #dev.off()
 
@@ -115,6 +115,7 @@ ggplot(df, aes(x=supp, y=y, fill=x)) +  geom_boxplot() + labs(fill = "Class") + 
 parameter_estimates_1_1_02 = as.matrix(read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_case1_02.csv"))
 parameter_estimates_1_1_05 = as.matrix(read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_case1_05.csv"))
 parameter_estimates_1_1_08 = as.matrix(read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_case1_08.csv"))
+parameter_estimates_1_1_095 = as.matrix(read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_case1_095.csv"))
 parameter_estimates_1_2_05 = as.matrix(read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_case2_05.csv"))
 parameter_estimates_1_2_08 = as.matrix(read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_case2_08.csv"))
 df_test = data.frame(y105 = apply(parameter_estimates_1_1_05,2,var))
@@ -127,4 +128,32 @@ ggplot(df_test, aes(x=1:16)) + geom_point(aes(y=y102, col = "1, 0.2"), size = 3)
 df_mu = data.frame(x02 = parameter_estimates_1_1_02[,8], y02 = parameter_estimates_1_1_02[,9], x05 = parameter_estimates_1_1_05[,8], y05 = parameter_estimates_1_1_05[,9], x08 = parameter_estimates_1_1_08[,8], y08 = parameter_estimates_1_1_08[,9])
 pdf(file="C:/Users/henri/Documents/GitHub/Master-Thesis/Images/mu_correlation.pdf")
 ggplot(df_mu) + geom_point(aes(x=x02, y=y02, col = "0.2"), size = 3) + geom_point(aes(x=x05, y=y05, col = "0.5"), size = 3) + geom_point(aes(x=x08, y=y08, col = "0.8"), size = 3) + xlab(expression(paste(mu)[1])) + ylab(expression(paste(mu)[2])) + theme_classic(base_size=20) + labs(col = expression(paste(rho))) + coord_fixed(ratio=1)
+dev.off()
+
+library(ggpubr)
+library(nortest)
+parameter_estimates_1_2_05[,c(2,3,4,5,6,7,11,12,13)] = log(parameter_estimates_1_2_05[,c(2,3,4,5,6,7,11,12,13)])
+parameter_estimates_1_2_05[,c(8,9,10)] = tan(parameter_estimates_1_2_05[,c(8,9,10)]/2)
+parameter_estimates_1_2_05[,c(14,15,16)] = atanh(parameter_estimates_1_2_05[,c(14,15,16)])
+df = as.data.frame(parameter_estimates_1_2_05)
+p1 <- ggplot(df, aes(sample = V1)) + geom_qq(size=1) + geom_qq_line() + theme_classic(base_size=10) + xlab("Theoretical") + ylab("Sample") + ggtitle(expression(paste(rho)))
+#df = data.frame(y = as.vector(parameter_estimates_1_1_05[,2:4]), x = rep(1:3,each=200))
+#p2 <- ggplot(df, aes(sample = y, colour = as.factor(x))) + geom_qq(size=1) + geom_qq_line() + theme_classic(base_size=10) + xlab("Theoretical") + ylab("Sample") + ggtitle(expression(paste(rho))) + labs(col = "Class")
+p2 <- ggplot(df, aes(sample = V2)) + geom_qq(size=1) + geom_qq_line() + theme_classic(base_size=10) + xlab("Theoretical") + ylab("Sample") + ggtitle(expression(paste("log(",alpha[1],")")))
+p3 <- ggplot(df, aes(sample = V3)) + geom_qq(size=1) + geom_qq_line() + theme_classic(base_size=10) + xlab("Theoretical") + ylab("Sample") + ggtitle(expression(paste("log(",alpha[2],")")))
+p4 <- ggplot(df, aes(sample = V4)) + geom_qq(size=1) + geom_qq_line() + theme_classic(base_size=10) + xlab("Theoretical") + ylab("Sample") + ggtitle(expression(paste("log(",alpha[3],")")))
+p5 <- ggplot(df, aes(sample = V5)) + geom_qq(size=1) + geom_qq_line() + theme_classic(base_size=10) + xlab("Theoretical") + ylab("Sample") + ggtitle(expression(paste("log(",beta[1],")")))
+p6 <- ggplot(df, aes(sample = V6)) + geom_qq(size=1) + geom_qq_line() + theme_classic(base_size=10) + xlab("Theoretical") + ylab("Sample") + ggtitle(expression(paste("log(",beta[2],")")))
+p7 <- ggplot(df, aes(sample = V7)) + geom_qq(size=1) + geom_qq_line() + theme_classic(base_size=10) + xlab("Theoretical") + ylab("Sample") + ggtitle(expression(paste("log(",beta[3],")")))
+p8 <- ggplot(df, aes(sample = V8)) + geom_qq(size=1) + geom_qq_line() + theme_classic(base_size=10) + xlab("Theoretical") + ylab("Sample") + ggtitle(expression(paste("tan(",mu[1],"/2)")))
+p9 <- ggplot(df, aes(sample = V9)) + geom_qq(size=1) + geom_qq_line() + theme_classic(base_size=10) + xlab("Theoretical") + ylab("Sample") + ggtitle(expression(paste("tan(",mu[2],"/2)")))
+p10 <- ggplot(df, aes(sample = V10)) + geom_qq(size=1) + geom_qq_line() + theme_classic(base_size=10) + xlab("Theoretical") + ylab("Sample") + ggtitle(expression(paste("tan(",mu[3],"/2)")))
+p11 <- ggplot(df, aes(sample = V11)) + geom_qq(size=1) + geom_qq_line() + theme_classic(base_size=10) + xlab("Theoretical") + ylab("Sample") + ggtitle(expression(paste("log(",kappa[1],")")))
+p12 <- ggplot(df, aes(sample = V12)) + geom_qq(size=1) + geom_qq_line() + theme_classic(base_size=10) + xlab("Theoretical") + ylab("Sample") + ggtitle(expression(paste("log(",kappa[2],")")))
+p13 <- ggplot(df, aes(sample = V13)) + geom_qq(size=1) + geom_qq_line() + theme_classic(base_size=10) + xlab("Theoretical") + ylab("Sample") + ggtitle(expression(paste("log(",kappa[3],")")))
+p14 <- ggplot(df, aes(sample = V14)) + geom_qq(size=1) + geom_qq_line() + theme_classic(base_size=10) + xlab("Theoretical") + ylab("Sample") + ggtitle(expression(paste("tanh"^"-1","(",lambda[1],")")))
+p15 <- ggplot(df, aes(sample = V15)) + geom_qq(size=1) + geom_qq_line() + theme_classic(base_size=10) + xlab("Theoretical") + ylab("Sample") + ggtitle(expression(paste("tanh"^"-1","(",lambda[2],")")))
+p16 <- ggplot(df, aes(sample = V16)) + geom_qq(size=1) + geom_qq_line() + theme_classic(base_size=10) + xlab("Theoretical") + ylab("Sample") + ggtitle(expression(paste("tanh"^"-1","(",lambda[3],")")))
+pdf(file="C:/Users/henri/Documents/GitHub/Master-Thesis/Images/Case2_05_qq.pdf")
+ggarrange(p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12,p13,p14,p15,p16,nrow=4, ncol = 4)
 dev.off()

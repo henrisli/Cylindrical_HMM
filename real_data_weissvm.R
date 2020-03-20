@@ -179,7 +179,7 @@ full_likelihood = function(parameter){
 
 #composite_likelihood = list(Inf)
 ttime = Sys.time()
-n_start = 5
+n_start = 10
 composite_likelihood<- rep(1000000, n_start)
 rho_vec = runif(n_start, 0, log(1+sqrt(ncolor)))
 theta_list = list()
@@ -333,17 +333,21 @@ library(prodlim)
 n_rows = 1
 n_cols = 24
 ncolor_test = 4
-# xi_A_n = matrix(1:2, ncol = 1)
-# for (i in 1:(n_rows)){
-#   xi_A_n = cbind(rbind(xi_A_n, xi_A_n), rep(1:2, each = 2^i))
-# }
-# xi_A_n = matrix(1:3, ncol = 1)
-# for (i in 1:(n_rows)){
-#   xi_A_n = cbind(rbind(xi_A_n, xi_A_n, xi_A_n), rep(1:3, each = 3^i))
-# }
+xi_A_n = matrix(1:2, ncol = 1)
+for (i in 1:(n_rows)){
+  xi_A_n = cbind(rbind(xi_A_n, xi_A_n), rep(1:2, each = 2^i))
+}
+xi_A_n = matrix(1:3, ncol = 1)
+for (i in 1:(n_rows)){
+  xi_A_n = cbind(rbind(xi_A_n, xi_A_n, xi_A_n), rep(1:3, each = 3^i))
+}
 xi_A_n = matrix(1:4, ncol = 1)
 for (i in 1:(n_rows)){
   xi_A_n = cbind(rbind(xi_A_n, xi_A_n,xi_A_n, xi_A_n), rep(1:4, each = 4^i))
+}
+xi_A_n = matrix(1:5, ncol = 1)
+for (i in 1:(n_rows)){
+  xi_A_n = cbind(rbind(xi_A_n, xi_A_n,xi_A_n, xi_A_n, xi_A_n), rep(1:5, each = 5^i))
 }
 
 
@@ -357,15 +361,20 @@ parameters_test_reparam = c(rho_est, as.vector(theta_iter[[1]]))
 # parameters_test_reparam[c(8,9,10)] = atan(parameters_test_reparam[c(8,9,10)]/2)
 # parameters_test_reparam[c(14,15,16)] = atanh(parameters_test_reparam[c(14,15,16)])
 
-parameters_test_reparam[c(2,3,4,5,6,7,8,9,14,15,16,17)] = log(parameters_test_reparam[c(2,3,4,5,6,7,8,9,14,15,16,17)])
-parameters_test_reparam[c(10,11,12,13)] = atan(parameters_test_reparam[c(10,11,12,13)]/2)
-parameters_test_reparam[c(18,19,20,21)] = atanh(parameters_test_reparam[c(18,19,20,21)])
+# parameters_test_reparam[c(2,3,4,5,6,7,8,9,14,15,16,17)] = log(parameters_test_reparam[c(2,3,4,5,6,7,8,9,14,15,16,17)])
+# parameters_test_reparam[c(10,11,12,13)] = atan(parameters_test_reparam[c(10,11,12,13)]/2)
+# parameters_test_reparam[c(18,19,20,21)] = atanh(parameters_test_reparam[c(18,19,20,21)])
+
+parameters_test_reparam[c(2,3,4,5,6,7,8,9,10,11,17,18,19,20,21)] = log(parameters_test_reparam[c(2,3,4,5,6,7,8,9,10,11,17,18,19,20,21)])
+parameters_test_reparam[c(12,13,14,15,16)] = atan(parameters_test_reparam[c(12,13,14,15,1)]/2)
+parameters_test_reparam[c(22,23,24,25,26)] = atanh(parameters_test_reparam[c(22,23,24,25,26)])
+
 
 init_param = parameters_test_reparam
 
 optimal = optim(init_param, neg_likelihood_exact, method = "BFGS", control = list(trace=6, REPORT = 1, reltol = 1e-5), n_rows = n_rows, data_sample = simulated_sample, n_cols = n_cols)
 
-write.table(optimal$par, "C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_2015_fall_4.csv")
+write.table(optimal$par, "C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_2015_fall_5.csv")
 
 estimated_param = rep(optimal$par[1],1+5*ncolor_test)
 
@@ -373,13 +382,13 @@ estimated_param = rep(optimal$par[1],1+5*ncolor_test)
 # estimated_param[c(6,7)] = 2*atan(optimal$par[c(6,7)])
 # estimated_param[c(10,11)] = tanh(optimal$par[c(10,11)])
 
-# estimated_param[c(2,3,4,5,6,7,11,12,13)] = exp(optimal$par[c(2,3,4,5,6,7,11,12,13)])
-# estimated_param[c(8,9,10)] = 2*atan(optimal$par[c(8,9,10)])
-# estimated_param[c(14,15,16)] = tanh(optimal$par[c(14,15,16)])
+estimated_param[c(2,3,4,5,6,7,11,12,13)] = exp(optimal$par[c(2,3,4,5,6,7,11,12,13)])
+estimated_param[c(8,9,10)] = 2*atan(optimal$par[c(8,9,10)])
+estimated_param[c(14,15,16)] = tanh(optimal$par[c(14,15,16)])
 
-estimated_param[c(2,3,4,5,6,7,8,9,14,15,16,17)] = exp(optimal$par[c(2,3,4,5,6,7,8,9,14,15,16,17)])
-estimated_param[c(10,11,12,13)] = 2*atan(optimal$par[c(10,11,12,13)])
-estimated_param[c(18,19,20,21)] = tanh(optimal$par[c(18,19,20,21)])
+# estimated_param[c(2,3,4,5,6,7,8,9,14,15,16,17)] = exp(optimal$par[c(2,3,4,5,6,7,8,9,14,15,16,17)])
+# estimated_param[c(10,11,12,13)] = 2*atan(optimal$par[c(10,11,12,13)])
+# estimated_param[c(18,19,20,21)] = tanh(optimal$par[c(18,19,20,21)])
 
 estimated_param[1]
 estimated_param = matrix(estimated_param[2:(5*ncolor_test+1)],nrow=ncolor_test)
@@ -401,3 +410,16 @@ image.plot(x=X_cor, y = y_cor, z = matrix(values,nrow=100))
 values = apply(vals, MARGIN= 1, FUN = dabeley, param=estimated_param[4,])
 values[which(values==Inf)]=0
 image.plot(x=X_cor, y = y_cor, z = matrix(values,nrow=100))
+
+
+par_est = read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_1995_summer_4.csv")[,1]
+full_likelihood(as.vector(par_est))
+neg_likelihood_exact_hess(par_est, n_rows, simulated_sample, n_cols)
+
+grad_1 = numDeriv::grad(full_likelihood, par_est)
+hess_1 = numDeriv::hessian(full_likelihood, par_est)
+sum(diag(grad_1%*%t(grad_1)%*%solve(hess_1)))
+
+grad_2 = numDeriv::grad(neg_likelihood_exact_hess, par_est, n_rows = n_rows, data_sample = simulated_sample, n_cols = n_cols)
+hess_2 = numDeriv::hessian(neg_likelihood_exact_hess, par_est, n_rows = n_rows, data_sample = simulated_sample, n_cols = n_cols)
+sum(diag(grad_2%*%t(grad_2)%*%solve(hess_2)))

@@ -167,7 +167,7 @@ optimal = optim(1,loglikelihood, lower = 0, method = "Brent", upper = 2*log(1+sq
 beta = optimal$par
 
 
-ncolor = 4
+ncolor = 3
 # Initialize parameters
 rho_list = list(0.5)
 #rho_list = list(rho)
