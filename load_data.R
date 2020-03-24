@@ -3,45 +3,75 @@ library(ncdf4)
 
 #nc = nc_open("C:/Users/henri/Documents/20170107090000-GLOBCURRENT-L4-CUReul_15m-ALT_SUM-v03.0-fv01.0.nc")
 #nc = nc_open("C:/Users/henri/Documents/20180104000000-GLOBCURRENT-L4-CUReul_15m-ALT_SUM_NRT-v03.0-fv01.0.nc")
-nc = nc_open("C:/Users/henri/Documents/19950106120000-GLOBCURRENT-L4-CUReul_hs-ALT_SUM-v03.0-fv01.0.nc")
-nc = nc_open("C:/Users/henri/Documents/19950406120000-GLOBCURRENT-L4-CUReul_hs-ALT_SUM-v03.0-fv01.0.nc")
 nc = nc_open("C:/Users/henri/Documents/20050705120000-GLOBCURRENT-L4-CUReul_hs-ALT_SUM-v03.0-fv01.0.nc")
+nc_2 = nc_open("C:/Users/henri/Documents/20150705120000-GLOBCURRENT-L4-CUReul_hs-ALT_SUM-v03.0-fv01.0.nc")
 nc = nc_open("C:/Users/henri/Documents/20051003120000-GLOBCURRENT-L4-CUReul_hs-ALT_SUM-v03.0-fv01.0.nc")
+nc_2 = nc_open("C:/Users/henri/Documents/20151003120000-GLOBCURRENT-L4-CUReul_hs-ALT_SUM-v03.0-fv01.0.nc")
 
 current = list()
 current$x = ncvar_get(nc, "lon")
 current$y = ncvar_get(nc, "lat")
 current$u = ncvar_get(nc, "eastward_eulerian_current_velocity")
 current$v = ncvar_get(nc, "northward_eulerian_current_velocity")
+current_2 = list()
+current_2$x = ncvar_get(nc_2, "lon")
+current_2$y = ncvar_get(nc_2, "lat")
+current_2$u = ncvar_get(nc_2, "eastward_eulerian_current_velocity")
+current_2$v = ncvar_get(nc_2, "northward_eulerian_current_velocity")
+
 #current$u = ncvar_get(nc, "u")
 #current$v = ncvar_get(nc, "v")
 # y_points = which(current$y>=68 & current$y <= 76)
 # x_points = which(current$x <= 8 & current$x >= 0)
 y_points = which(current$y>=66 & current$y <= 72)
-x_points = which(current$x <= 12 & current$x >= -3)[floor(1:24)*5/2]
+x_points = which(current$x <= 12 & current$x >= -3)[floor(1:24*5/2)]
+y_points_2 = which(current_2$y>=66 & current_2$y <= 72)
+x_points_2 = which(current_2$x <= 12 & current_2$x >= -3)[floor(1:24*5/2)]
 
 # image(x=x_points, y = y_points, current$u[x_points,y_points])
 current$theta = atan(current$v/current$u)
 current$theta = ifelse(current$u<0&current$v<0, current$theta-pi, current$theta)
 current$theta = ifelse(current$u<0&current$v>0, current$theta + pi, current$theta)
 current$r = sqrt(current$u^2+current$v^2)
+
+current_2$theta = atan(current_2$v/current_2$u)
+current_2$theta = ifelse(current_2$u<0&current_2$v<0, current_2$theta-pi, current_2$theta)
+current_2$theta = ifelse(current_2$u<0&current_2$v>0, current_2$theta + pi, current_2$theta)
+current_2$r = sqrt(current_2$u^2+current_2$v^2)
 # image.plot(x=x_points, y = y_points, current$theta[x_points,y_points])
 # image.plot(x=x_points, y = y_points, current$r[x_points,y_points])
 r_sample = as.vector(current$r[x_points, y_points])
 theta_sample = as.vector(current$theta[x_points, y_points])
-df <- data.frame(x=rep(current$x[x_points],length(y_points)),y=rep(current$y[y_points],each=length(x_points)),dx=r_sample*cos(theta_sample)*3,dy=r_sample*sin(theta_sample)*3)
-ggplot(data=df, aes(x=x, y=y)) + geom_segment(aes(xend=x+dx, yend=y+dy), arrow = arrow(length = unit(0.08,"cm"))) + theme_bw(base_size=20)# + coord_fixed(ratio=1) + xlab("Longitude") + ylab("Latitude")
-#ggplot(data=df, aes(x=x, y=y, col = as.factor(apply(estimated_probabilities, 1, which.max)))) + geom_segment(aes(xend=x+dx, yend=y+dy), arrow = arrow(length = unit(0.08,"cm"))) + theme_bw(base_size=20) + theme(legend.position="none") + coord_fixed(ratio=1) + xlab("Longitude") + ylab("Latitude") + scale_color_manual(values = colorss)
+r_sample_2 = as.vector(current_2$r[x_points_2, y_points_2])
+theta_sample_2 = as.vector(current_2$theta[x_points_2, y_points_2])
+df <- data.frame(x=rep(current$x[x_points],length(y_points)),y=rep(current$y[y_points],each=length(x_points)),dx=r_sample*cos(theta_sample)*3*2.5,dy=r_sample*sin(theta_sample)*3)
+df_red_arrow = data.frame(x = 2.625, dx=3*0.5*2.5, dy = 0, y = 65.5)
+ggplot(data=df) + geom_segment(data = df_red_arrow, aes(x = x, y = y, xend = x+dx, yend = y+dy),col="red", arrow = arrow(length = unit(0.08,"cm"))) + geom_segment(aes(x=x, y=y, xend=x+dx, yend=y+dy), arrow = arrow(length = unit(0.08,"cm"))) + theme_bw(base_size=20) + xlab("Longitude (°E)") + ylab("Latitude (°N)") + coord_cartesian(xlim = c(-3-1.875,12+1.875), ylim = c(65.25,72.75))# + coord_fixed(ratio=1) 
+#ggplot(data=df, aes(x=x, y=y, col = as.factor(apply(estimated_probabilities, 1, which.max)))) + geom_segment(aes(xend=x+dx, yend=y+dy), arrow = arrow(length = unit(0.08,"cm"))) + theme_bw(base_size=20) + theme(legend.position="none") + xlab("Longitude (°E)") + ylab("Latitude (°N)") + scale_color_manual(values = colorss) + coord_cartesian(xlim = c(-3-1.875,12+1.875), ylim = c(65.25,72.75))
+#ggplot(data=df, aes(x=x, y=y, col = as.factor(apply(estimated_probabilities, 1, which.max)), alpha = apply(estimated_probabilities, 1, max))) + geom_segment(aes(xend=x+dx, yend=y+dy), arrow = arrow(length = unit(0.08,"cm"))) + theme_bw(base_size=20) + theme(legend.position="none") + xlab("Longitude (°E)") + ylab("Latitude (°N)") + scale_color_manual(values = colorss) + coord_cartesian(xlim = c(-3-1.875,12+1.875), ylim = c(65.25,72.75))
 
+df_2 <- data.frame(x=rep(current_2$x[x_points_2],length(y_points_2)),y=rep(current_2$y[y_points_2],each=length(x_points_2)),dx=r_sample_2*cos(theta_sample_2)*3*2.5,dy=r_sample_2*sin(theta_sample_2)*3)
+ggplot(data=df_2, aes(x=x, y=y)) + geom_segment(data = df_red_arrow, aes(x = x, y = y, xend = x+dx, yend = y+dy),col="red", arrow = arrow(length = unit(0.08,"cm"))) + geom_segment(aes(xend=x+dx, yend=y+dy), arrow = arrow(length = unit(0.08,"cm"))) + theme_bw(base_size=20) + xlab("Longitude (°E)") + ylab("Latitude (°N)") + coord_cartesian(xlim = c(-3-1.875,12+1.875), ylim = c(65.25,72.75))# + coord_fixed(ratio=1) 
+#ggplot(data=df_2, aes(x=x, y=y, col = as.factor(apply(estimated_probabilities_2, 1, which.max)))) + geom_segment(aes(xend=x+dx, yend=y+dy), arrow = arrow(length = unit(0.08,"cm"))) + theme_bw(base_size=20) + theme(legend.position="none") + xlab("Longitude (°E)") + ylab("Latitude (°N)") + scale_color_manual(values = colorss) + coord_cartesian(xlim = c(-3-1.875,12+1.875), ylim = c(65.25,72.75))
+#ggplot(data=df_2, aes(x=x, y=y, col = as.factor(apply(estimated_probabilities_2, 1, which.max)), alpha = apply(estimated_probabilities_2, 1, max))) + geom_segment(aes(xend=x+dx, yend=y+dy), arrow = arrow(length = unit(0.08,"cm"))) + theme_bw(base_size=20) + theme(legend.position="none") + xlab("Longitude (°E)") + ylab("Latitude (°N)") + scale_color_manual(values = colorss) + coord_cartesian(xlim = c(-3-1.875,12+1.875), ylim = c(65.25,72.75))
 
 data_set = data.frame(x = r_sample, theta = theta_sample)
 ggplot(data_set) + geom_point(aes(x=x, y = theta)) + theme_classic(base_size=20) + xlab("X") + ylab(expression(paste(Phi))) + coord_cartesian(xlim = c(0,0.5))
 #ggplot(data_set) + geom_point(aes(x=x, y = theta, col = as.factor(apply(estimated_probabilities, 1, which.max)))) + theme_classic(base_size=20) + theme(legend.position = "none") + xlab("X") + ylab(expression(paste(Phi))) + coord_cartesian(xlim = c(0,0.5)) + scale_color_manual(values = colorss)
+#ggplot(data_set) + geom_point(aes(x=x, y = theta, col = as.factor(apply(estimated_probabilities, 1, which.max)), alpha = apply(estimated_probabilities, 1, max))) + theme_classic(base_size=20) + theme(legend.position = "none") + xlab("X") + ylab(expression(paste(Phi))) + coord_cartesian(xlim = c(0,0.5)) + scale_color_manual(values = colorss)
+
+data_set_2 = data.frame(x = r_sample_2, theta = theta_sample_2)
+ggplot(data_set_2) + geom_point(aes(x=x, y = theta)) + theme_classic(base_size=20) + xlab("X") + ylab(expression(paste(Phi))) + coord_cartesian(xlim = c(0,0.5))
+#ggplot(data_set_2) + geom_point(aes(x=x, y = theta, col = as.factor(apply(estimated_probabilities_2, 1, which.max)))) + theme_classic(base_size=20) + theme(legend.position = "none") + xlab("X") + ylab(expression(paste(Phi))) + coord_cartesian(xlim = c(0,0.5)) + scale_color_manual(values = colorss)
+#ggplot(data_set_2) + geom_point(aes(x=x, y = theta, col = as.factor(apply(estimated_probabilities_2, 1, which.max)), alpha = apply(estimated_probabilities_2, 1, max))) + theme_classic(base_size=20) + theme(legend.position = "none") + xlab("X") + ylab(expression(paste(Phi))) + coord_cartesian(xlim = c(0,0.5)) + scale_color_manual(values = colorss)
+
 simulated_sample = as.matrix(data_set)
+simulated_sample_2 = as.matrix(data_set_2)
 
 
-par_est = read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_2015_fall_5.csv")[,1]
+par_est = read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_summer_5.csv")[,1]
 estimated_probabilities = find_back_probs(par_est, n_rows, simulated_sample, n_cols)
+estimated_probabilities_2 = find_back_probs(par_est, n_rows, simulated_sample_2, n_cols)
 
 
 loglik_new = function(param1, x){
@@ -96,6 +126,7 @@ ggplotColours <- function(n = 6, h = c(0, 360) + 15){
 }
 
 colorss = ggplotColours(n=3)
+colorss = ggplotColours(n=6)[c(1,3,5,2)]
 colorss = ggplotColours(n=6)[c(1,3,5,2,6)]
 
 # index_2 = 1:576
