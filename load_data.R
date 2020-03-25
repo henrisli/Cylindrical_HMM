@@ -69,7 +69,7 @@ simulated_sample = as.matrix(data_set)
 simulated_sample_2 = as.matrix(data_set_2)
 
 
-par_est = read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_summer_5.csv")[,1]
+par_est = read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_summer_3.csv")[,1]
 estimated_probabilities = find_back_probs(par_est, n_rows, simulated_sample, n_cols)
 estimated_probabilities_2 = find_back_probs(par_est, n_rows, simulated_sample_2, n_cols)
 

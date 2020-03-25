@@ -19,7 +19,7 @@ parameter_estimates_1 = matrix(NA, nrow = n_replicates, ncol = 16)
 true_field = matrix(NA, nrow = n_replicates, ncol = n_grid^2)
 estimated_field_1 = matrix(NA, nrow = n_replicates, ncol = n_grid^2)
 
-for (rep_num in 103:n_replicates){
+for (rep_num in 1:n_replicates){
   # Draw random field
   x_potts <- matrix(1, nrow = n_grid, ncol = n_grid)
   foo <- packPotts(x_potts, ncolor)

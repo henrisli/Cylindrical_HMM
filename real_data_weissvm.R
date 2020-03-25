@@ -181,7 +181,7 @@ full_likelihood_real = function(parameter, simulated_sample_1, simulated_sample_
 }
 
 # START HERE
-n_start = 20
+n_start = 30
 composite_likelihood<- rep(1000000, n_start)
 rho_vec = runif(n_start, 0, log(1+sqrt(ncolor)))
 theta_list = list()
@@ -397,30 +397,30 @@ parameters_test_reparam = c(rho_est, as.vector(theta_iter[[1]]))
 # parameters_test_reparam[c(8,9,10)] = atan(parameters_test_reparam[c(8,9,10)]/2)
 # parameters_test_reparam[c(14,15,16)] = atanh(parameters_test_reparam[c(14,15,16)])
 
-# parameters_test_reparam[c(2,3,4,5,6,7,8,9,14,15,16,17)] = log(parameters_test_reparam[c(2,3,4,5,6,7,8,9,14,15,16,17)])
-# parameters_test_reparam[c(10,11,12,13)] = atan(parameters_test_reparam[c(10,11,12,13)]/2)
-# parameters_test_reparam[c(18,19,20,21)] = atanh(parameters_test_reparam[c(18,19,20,21)])
+parameters_test_reparam[c(2,3,4,5,6,7,8,9,14,15,16,17)] = log(parameters_test_reparam[c(2,3,4,5,6,7,8,9,14,15,16,17)])
+parameters_test_reparam[c(10,11,12,13)] = atan(parameters_test_reparam[c(10,11,12,13)]/2)
+parameters_test_reparam[c(18,19,20,21)] = atanh(parameters_test_reparam[c(18,19,20,21)])
 
-parameters_test_reparam[c(2,3,4,5,6,7,8,9,10,11,17,18,19,20,21)] = log(parameters_test_reparam[c(2,3,4,5,6,7,8,9,10,11,17,18,19,20,21)])
-parameters_test_reparam[c(12,13,14,15,16)] = atan(parameters_test_reparam[c(12,13,14,15,1)]/2)
-parameters_test_reparam[c(22,23,24,25,26)] = atanh(parameters_test_reparam[c(22,23,24,25,26)])
+# parameters_test_reparam[c(2,3,4,5,6,7,8,9,10,11,17,18,19,20,21)] = log(parameters_test_reparam[c(2,3,4,5,6,7,8,9,10,11,17,18,19,20,21)])
+# parameters_test_reparam[c(12,13,14,15,16)] = atan(parameters_test_reparam[c(12,13,14,15,1)]/2)
+# parameters_test_reparam[c(22,23,24,25,26)] = atanh(parameters_test_reparam[c(22,23,24,25,26)])
 
 
 init_param = parameters_test_reparam
 
 optimal = optim(init_param, neg_likelihood_exact_real, method = "BFGS", control = list(trace=6, REPORT = 1, reltol = 1e-5), n_rows = n_rows, data_sample = simulated_sample, data_sample_2 = simulated_sample_2, n_cols = n_cols)
 
-write.table(optimal$par, "C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_summer_5.csv")
+write.table(optimal$par, "C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_fall_4.csv")
 
 estimated_param = rep(optimal$par[1],1+5*ncolor_test)
 
-# estimated_param[c(2,3,4,5,8,9)] = exp(optimal$par[c(2,3,4,5,8,9)])
-# estimated_param[c(6,7)] = 2*atan(optimal$par[c(6,7)])
-# estimated_param[c(10,11)] = tanh(optimal$par[c(10,11)])
+estimated_param[c(2,3,4,5,8,9)] = exp(optimal$par[c(2,3,4,5,8,9)])
+estimated_param[c(6,7)] = 2*atan(optimal$par[c(6,7)])
+estimated_param[c(10,11)] = tanh(optimal$par[c(10,11)])
 
-# estimated_param[c(2,3,4,5,6,7,11,12,13)] = exp(optimal$par[c(2,3,4,5,6,7,11,12,13)])
-# estimated_param[c(8,9,10)] = 2*atan(optimal$par[c(8,9,10)])
-# estimated_param[c(14,15,16)] = tanh(optimal$par[c(14,15,16)])
+estimated_param[c(2,3,4,5,6,7,11,12,13)] = exp(optimal$par[c(2,3,4,5,6,7,11,12,13)])
+estimated_param[c(8,9,10)] = 2*atan(optimal$par[c(8,9,10)])
+estimated_param[c(14,15,16)] = tanh(optimal$par[c(14,15,16)])
 
 # estimated_param[c(2,3,4,5,6,7,8,9,14,15,16,17)] = exp(optimal$par[c(2,3,4,5,6,7,8,9,14,15,16,17)])
 # estimated_param[c(10,11,12,13)] = 2*atan(optimal$par[c(10,11,12,13)])
@@ -453,7 +453,7 @@ values[which(values==Inf)]=0
 image.plot(x=X_cor, y = y_cor, z = matrix(values,nrow=100))
 
 
-par_est = read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_summer_5.csv")[,1]
+par_est = read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_fall_3.csv")[,1]
 full_likelihood_real(par_est, simulated_sample, simulated_sample_2)
 neg_likelihood_exact_hess_real(par_est, n_rows, simulated_sample, simulated_sample_2, n_cols)
 
