@@ -1,7 +1,7 @@
 library(prodlim)
 n_rows = 1
 n_cols = 24
-ncolor_test = 2
+ncolor_test = 3
 rho_test = 0.8
 potts_param_test <- c(rep(0, ncolor_test), rho_test)
 x_potts_test <- matrix(1, nrow = n_rows, ncol = n_cols)

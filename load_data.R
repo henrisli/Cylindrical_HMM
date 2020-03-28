@@ -77,14 +77,23 @@ estimated_probabilities_2 = find_back_probs(par_est, n_rows, simulated_sample_2,
 loglik_new = function(param1, x){
   return(-sum(log(apply(x, 1, dabeley_reparam, param=param1))))
 }
+
+# WeiSSVM
 #param_test = c(1.1,0.9,0,1.7,-0.8)
 # X100:
 #param_test = c(1.7,0.1,0,0.8,0)
 #param_test = c(3,0.5,0,0,0)
-# X1:
+# X1: 0.9-3  5-25  -pi - pi  0 - 3  -0.9-0.9
 param_test = c(1.4,10,0,0.6,0)
 param_test = c(1.9,15,0,0,0)
 values = apply(vals, MARGIN= 1, FUN = dabeley, param=param_test)
+values[which(values==Inf)]=0
+image.plot(x=X_cor, y = y_cor, z = matrix(values,nrow=100))
+
+# HTLP
+# 0.3-1.2  0.04-0.2  -pi-pi  0-3  0-0.99
+param_test = c(0.6,0.1,0,3,0.85)
+values = apply(vals, MARGIN= 1, FUN = dhtlp, param=param_test)
 values[which(values==Inf)]=0
 image.plot(x=X_cor, y = y_cor, z = matrix(values,nrow=100))
 

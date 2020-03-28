@@ -183,6 +183,16 @@ neg_likelihood_exact_htlp <- function(parameters_input, n_rows, data_sample, n_c
   return(ret_val)
 }
 
+neg_likelihood_exact_hess_htlp <- function(parameters_input, n_rows, data_sample, n_cols){
+  ret_val = 0
+  for (i in 1:(n_cols-n_rows+1)){
+    if (n_rows==1){
+      ret_val = ret_val -likelihood_exact_1_htlp(parameters_input, n_rows, data_sample[((i-1)*n_cols*n_rows+1):(n_rows*n_cols*i),], n_cols)
+    }else{ret_val = ret_val -likelihood_exact_htlp(parameters_input, n_rows, data_sample[1:(n_rows*n_cols) + (i-1)*n_cols,], n_cols)}
+  }
+  return(ret_val)
+}
+
 backward_probs_htlp <- function(parameters_input, n_rows, data_sample, n_cols){
   rho_val = parameters_input[1]
   theta_val = matrix(parameters_input[2:(5*ncolor_test+1)], nrow=ncolor_test)
@@ -325,6 +335,127 @@ backward_probs_1_htlp <- function(parameters_input, n_rows, data_sample, n_cols)
   }
   return(backward_prob)
 }
+
+# Simulate from the forward-backward algorithm
+simulate_backward_probs_1_htlp <- function(parameters_input, n_rows, data_sample, n_cols){
+  rho_val = parameters_input[1]
+  theta_val = matrix(parameters_input[2:(5*ncolor_test+1)], nrow=ncolor_test)
+  
+  # First initiate normality constants and forward probabilities
+  norm_const = 0
+  for (j in 1:ncolor_test){
+    norm_const = norm_const + (1/ncolor_test)*dhtlp_reparam(theta_val[j,], as.vector(data_sample[1,]))
+  }
+  norm_const = 1/norm_const
+  norm_const = c(norm_const, rep(NA, n_rows*n_cols-1))
+  forward_prob = matrix(0,nrow=n_rows*n_cols,ncol = ncolor_test)
+  for (j in 1:ncolor_test){
+    forward_prob[1,j] = norm_const[1]*(1/ncolor_test)*dhtlp_reparam(theta_val[j,], as.vector(data_sample[1,]))
+  }
+  transition = matrix(0, nrow = n_cols*n_rows, ncol = ncolor_test^(n_rows+1))
+  moving_window = matrix(0, nrow = n_cols*n_rows, ncol = ncolor_test^(n_rows))
+  moving_window[1, 1:ncolor_test] = forward_prob[1,]
+  potts_prob_2 = apply(xi_A_2, 1, function(i) exp(rho_val*ifelse(i[1]==i[2],1,0)))
+  potts_prob_2 = potts_prob_2/sum(potts_prob_2)
+  
+  # Iterate to find constants and probabilities
+  for (t in 2:n_cols){
+    for (j in 1:(ncolor_test^2)){
+      transition[t,j] = potts_prob_2[j]*moving_window[t-1,(j-1)%%(ncolor_test^(2-1))+1]*dhtlp_reparam(theta_val[xi_A_n[j,2],], as.vector(data_sample[t,]))}
+    norm_const[t] = 1/sum(transition[t,])
+    transition[t,] = transition[t,]*norm_const[t]
+    for (j in 1:(ncolor_test^n_rows)){
+      moving_window[t,j] = sum(transition[t, (j-1)*ncolor_test+1:ncolor_test])
+    }
+    
+    for (j in 1:ncolor_test){
+      forward_prob[t,j] = sum(transition[t,which(xi_A_n[,2]==j)])
+    }
+  }
+  back_transition = matrix(NA, ncol = ncolor_test^2, nrow = n_rows*n_cols)
+  backward_prob = matrix(NA, ncol = ncolor_test, nrow = n_rows*n_cols)
+  backward_prob[n_rows*n_cols,] = forward_prob[n_rows*n_cols, ]
+  propagation = matrix(NA, ncol = ncolor_test^2, nrow = n_rows*n_cols)
+  for (t in n_cols:2){
+    for (j in 1:(ncolor_test^2)){
+      if (forward_prob[t, (j-1)%/%ncolor_test+1]==0 & transition[t,j]==0){back_transition[t,j] = backward_prob[t, (j-1)%/%ncolor_test+1]
+      }else{back_transition[t,j] = transition[t,j]*backward_prob[t, (j-1)%/%ncolor_test+1]/forward_prob[t, (j-1)%/%ncolor_test+1]}
+    }
+    for (j in 1:ncolor_test){
+      backward_prob[t-1,j] = sum(back_transition[t, j+0:(ncolor_test-1)*ncolor_test])
+    }
+    for (j in 1:(ncolor_test^2)){
+      propagation[t,j] = back_transition[t,j]/backward_prob[t-1, (j-1)%%ncolor_test+1]
+    }
+  }
+  x_sample = rep(NA, n_cols*n_rows)
+  x_sample[1] = which(rmultinom(1,1,backward_prob[1,])==1)
+  for (i in 2:n_cols){
+    x_sample[i] = which(rmultinom(1,1,propagation[i,x_sample[i-1]+0:(ncolor_test-1)*ncolor_test])==1)
+  }
+  return(x_sample)
+}
+
+# Simulate from the forward-backward algorithm with seed
+simulate_backward_probs_1_seed_htlp <- function(parameters_input, n_rows, data_sample, n_cols, x_seed){
+  rho_val = parameters_input[1]
+  theta_val = matrix(parameters_input[2:(5*ncolor_test+1)], nrow=ncolor_test)
+  
+  # First initiate normality constants and forward probabilities
+  norm_const = 0
+  for (j in 1:ncolor_test){
+    norm_const = norm_const + (1/ncolor_test)*dhtlp_reparam(theta_val[j,], as.vector(data_sample[1,]))
+  }
+  norm_const = 1/norm_const
+  norm_const = c(norm_const, rep(NA, n_rows*n_cols-1))
+  forward_prob = matrix(0,nrow=n_rows*n_cols,ncol = ncolor_test)
+  for (j in 1:ncolor_test){
+    forward_prob[1,j] = norm_const[1]*(1/ncolor_test)*dhtlp_reparam(theta_val[j,], as.vector(data_sample[1,]))
+  }
+  transition = matrix(0, nrow = n_cols*n_rows, ncol = ncolor_test^(n_rows+1))
+  moving_window = matrix(0, nrow = n_cols*n_rows, ncol = ncolor_test^(n_rows))
+  moving_window[1, 1:ncolor_test] = forward_prob[1,]
+  potts_prob_2 = apply(xi_A_2, 1, function(i) exp(rho_val*ifelse(i[1]==i[2],1,0)))
+  potts_prob_2 = potts_prob_2/sum(potts_prob_2)
+  
+  # Iterate to find constants and probabilities
+  for (t in 2:n_cols){
+    for (j in 1:(ncolor_test^2)){
+      transition[t,j] = potts_prob_2[j]*moving_window[t-1,(j-1)%%(ncolor_test^(2-1))+1]*dhtlp_reparam(theta_val[xi_A_n[j,2],], as.vector(data_sample[t,]))}
+    norm_const[t] = 1/sum(transition[t,])
+    transition[t,] = transition[t,]*norm_const[t]
+    for (j in 1:(ncolor_test^n_rows)){
+      moving_window[t,j] = sum(transition[t, (j-1)*ncolor_test+1:ncolor_test])
+    }
+    
+    for (j in 1:ncolor_test){
+      forward_prob[t,j] = sum(transition[t,which(xi_A_n[,2]==j)])
+    }
+  }
+  back_transition = matrix(NA, ncol = ncolor_test^2, nrow = n_rows*n_cols)
+  backward_prob = matrix(NA, ncol = ncolor_test, nrow = n_rows*n_cols)
+  backward_prob[n_rows*n_cols,] = forward_prob[n_rows*n_cols, ]
+  propagation = matrix(NA, ncol = ncolor_test^2, nrow = n_rows*n_cols)
+  for (t in n_cols:2){
+    for (j in 1:(ncolor_test^2)){
+      if (forward_prob[t, (j-1)%/%ncolor_test+1]==0 & transition[t,j]==0){back_transition[t,j] = backward_prob[t, (j-1)%/%ncolor_test+1]
+      }else{back_transition[t,j] = transition[t,j]*backward_prob[t, (j-1)%/%ncolor_test+1]/forward_prob[t, (j-1)%/%ncolor_test+1]}
+    }
+    for (j in 1:ncolor_test){
+      backward_prob[t-1,j] = sum(back_transition[t, j+0:(ncolor_test-1)*ncolor_test])
+    }
+    for (j in 1:(ncolor_test^2)){
+      propagation[t,j] = back_transition[t,j]/backward_prob[t-1, (j-1)%%ncolor_test+1]
+    }
+  }
+  x_sample = rep(NA, n_cols*n_rows)
+  x_sample[1] = x_seed
+  for (i in 2:n_cols){
+    x_sample[i] = which(rmultinom(1,1,propagation[i,x_sample[i-1]+0:(ncolor_test-1)*ncolor_test])==1)
+  }
+  return(x_sample)
+}
+
 
 
 # backward_probabilities = matrix(0, nrow = n_cols^2, ncol = ncolor_test)
