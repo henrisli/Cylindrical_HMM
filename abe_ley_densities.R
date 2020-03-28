@@ -87,3 +87,44 @@ contour(x=X_cor, y = y_cor, z = matrix(values,nrow=100), xlab = "x", ylab = expr
 values = apply(vals, MARGIN= 1, FUN = dabeley, param=parameters[3,])
 par(mgp=c(1.8,0.7,0),mar=c(3.7,3.7,2,2)+0.1)
 contour(x=X_cor, y = y_cor, z = matrix(values,nrow=100), xlab = "x", ylab = expression(paste(phi)), labcex = 1, cex.lab = 1.7)
+
+
+
+
+# Contour of fitted models to real data and points
+X_cor = seq(0,0.5,l=100)
+y_cor = seq(-pi,pi,l=100)
+vals = cbind(rep(X_cor,100), rep(y_cor,each=100))
+parameters_test_reparam = read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_summer_2.csv")[,1]
+
+parameters = parameters_test_reparam
+
+parameters[c(2,3,4,5,8,9)] = exp(parameters[c(2,3,4,5,8,9)])
+parameters[c(6,7)] = 2*atan(parameters[c(6,7)])
+parameters[c(10,11)] = tanh(parameters[c(10,11)])
+
+# parameters[c(2,3,4,5,6,7,11,12,13)] = exp(parameters[c(2,3,4,5,6,7,11,12,13)])
+# parameters[c(8,9,10)] = 2*atan(parameters[c(8,9,10)])
+# parameters[c(14,15,16)] = tanh(parameters[c(14,15,16)])
+
+parameters = matrix(parameters[2:(5*ncolor_test+1)],nrow=ncolor_test)
+parameters
+values = apply(vals, MARGIN= 1, FUN = dabeley, param=parameters[1,])
+par(mgp=c(1.8,0.7,0),mar=c(3.7,3.7,2,2)+0.1)
+contour(x=X_cor, y = y_cor, z = matrix(values,nrow=100), xlab = "x", ylab = expression(paste(phi)), labcex = 0.01, cex.lab = 1.7)
+points(x = simulated_sample[,1], y = simulated_sample[,2], col = rgb(0,0,0,alpha=estimated_probabilities[,1]), pch=16, cex = 1)
+points(x = simulated_sample_2[,1], y = simulated_sample_2[,2], col = rgb(0,0,0,alpha=estimated_probabilities_2[,1]), pch=15, cex = 1)
+
+
+values = apply(vals, MARGIN= 1, FUN = dabeley, param=parameters[2,])
+par(mgp=c(1.8,0.7,0),mar=c(3.7,3.7,2,2)+0.1)
+contour(x=X_cor, y = y_cor, z = matrix(values,nrow=100), xlab = "x", ylab = expression(paste(phi)), labcex = 0.01, cex.lab = 1.7)
+points(x = simulated_sample[,1], y = simulated_sample[,2], col = rgb(0,0,0,alpha=estimated_probabilities[,2]), pch=16, cex = 1)
+points(x = simulated_sample_2[,1], y = simulated_sample_2[,2], col = rgb(0,0,0,alpha=estimated_probabilities_2[,2]), pch=15, cex = 1)
+
+
+values = apply(vals, MARGIN= 1, FUN = dabeley, param=parameters[3,])
+par(mgp=c(1.8,0.7,0),mar=c(3.7,3.7,2,2)+0.1)
+contour(x=X_cor, y = y_cor, z = matrix(values,nrow=100), xlab = "x", ylab = expression(paste(phi)), labcex = 0.01, cex.lab = 1.7)
+points(x = simulated_sample[,1], y = simulated_sample[,2], col = rgb(0,0,0,alpha=estimated_probabilities[,3]), pch=16, cex = 1)
+points(x = simulated_sample_2[,1], y = simulated_sample_2[,2], col = rgb(0,0,0,alpha=estimated_probabilities_2[,3]), pch=15, cex = 1)
