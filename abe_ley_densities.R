@@ -128,3 +128,23 @@ par(mgp=c(1.8,0.7,0),mar=c(3.7,3.7,2,2)+0.1)
 contour(x=X_cor, y = y_cor, z = matrix(values,nrow=100), xlab = "x", ylab = expression(paste(phi)), labcex = 0.01, cex.lab = 1.7)
 points(x = simulated_sample[,1], y = simulated_sample[,2], col = rgb(0,0,0,alpha=estimated_probabilities[,3]), pch=16, cex = 1)
 points(x = simulated_sample_2[,1], y = simulated_sample_2[,2], col = rgb(0,0,0,alpha=estimated_probabilities_2[,3]), pch=15, cex = 1)
+
+
+
+
+# Windrose and sample
+parameters = c(2,1,0,1,1)
+simulated_sample = data.frame(x = rep(NA,1000), theta = rep(NA,1000))
+for(i in 1:(1000)){
+  theta_1 = rwrappedcauchy(1, mu = circular(parameters[3]), rho = tanh(parameters[4]/2))
+  theta_1 = ifelse(as.numeric(theta_1)>pi, as.numeric(theta_1)-2*pi, as.numeric(theta_1))
+  
+  u = runif(1)
+  simulated_sample$theta[i] = ifelse(u<(1+parameters[5]*sin(theta_1-parameters[3]))/2, theta_1, -theta_1)
+  simulated_sample$x[i] = rweibull(1, scale = 1/(parameters[2]*(1-tanh(parameters[4])*cos(simulated_sample$theta[i]-parameters[3]))^(1/parameters[1])), shape = parameters[1])
+}
+ggplot(simulated_sample) + geom_point(aes(x=x, y = theta)) + theme_classic(base_size=20) + theme(legend.position = "none") + xlab("X") + ylab(expression(paste(Phi))) + coord_cartesian(xlim = c(0,5), ylim = c(-pi,pi))
+simulated_sample = as.matrix(simulated_sample)
+
+df <- data.frame(x=rep(0,1000),y=rep(0,1000),dx=simulated_sample[,1]*cos(simulated_sample[,2]),dy=simulated_sample[,1]*sin(simulated_sample[,2]))
+ggplot(data=df) + geom_segment(aes(x=x, y=y, xend=x+dx, yend=y+dy), arrow = arrow(length = unit(0.15,"cm"))) + theme_classic(base_size=20) + xlab("u") + ylab("v") + coord_cartesian(xlim = c(-5,5), ylim = c(-5,5)) 
