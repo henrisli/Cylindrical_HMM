@@ -1,14 +1,14 @@
-parameters_test_reparam = read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_fall_3.csv")[,1]
+parameters_test_reparam = read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_summer_2_htlp.csv")[,1]
 
 parameters = parameters_test_reparam
 
 # parameters[c(2,3,4,5,8,9)] = exp(parameters[c(2,3,4,5,8,9)])
 # parameters[c(6,7)] = 2*atan(parameters[c(6,7)])
-# parameters[c(10,11)] = tanh(parameters[c(10,11)])
+# parameters[c(10,11)] = exp(parameters[c(10,11)])/(1+exp(parameters[c(10,11)]))
 
 parameters[c(2,3,4,5,6,7,11,12,13)] = exp(parameters[c(2,3,4,5,6,7,11,12,13)])
 parameters[c(8,9,10)] = 2*atan(parameters[c(8,9,10)])
-parameters[c(14,15,16)] = tanh(parameters[c(14,15,16)])
+parameters[c(14,15,16)] = exp(parameters[c(14,15,16)])/(1+exp(parameters[c(14,15,16)]))
 
 parameters = matrix(parameters[2:(5*ncolor_test+1)],nrow=ncolor_test)
 parameters
@@ -29,13 +29,13 @@ estimated_field_1 = matrix(NA, nrow = n_replicates, ncol = n_grid^2)
 estimated_field_2 = matrix(NA, nrow = n_replicates, ncol = n_grid^2)
 reverse = as.vector(t(matrix(1:(n_cols^2), nrow=n_cols)))
 
-for (rep_num in 101:n_replicates){
+for (rep_num in 36:n_replicates){
   ## Draw random field ##
-  true_field_1[rep_num,1:n_cols] = simulate_backward_probs_1(parameters_test_reparam, n_rows, simulated_sample[1:n_cols,], n_cols)
-  true_field_2[rep_num,1:n_cols] = simulate_backward_probs_1(parameters_test_reparam, n_rows, simulated_sample_2[1:n_cols,], n_cols)
+  true_field_1[rep_num,1:n_cols] = simulate_backward_probs_1_htlp(parameters_test_reparam, n_rows, simulated_sample[1:n_cols,], n_cols)
+  true_field_2[rep_num,1:n_cols] = simulate_backward_probs_1_htlp(parameters_test_reparam, n_rows, simulated_sample_2[1:n_cols,], n_cols)
   for (i in 1:n_grid){
-    true_field_1[rep_num,reverse[((i-1)*n_grid+1):(n_grid*i)]] = simulate_backward_probs_1_seed(parameters_test_reparam, n_rows, simulated_sample[reverse[((i-1)*n_cols*n_rows+1):(n_rows*n_cols*i)],], n_cols, x_seed = true_field_1[rep_num,i])
-    true_field_2[rep_num,reverse[((i-1)*n_grid+1):(n_grid*i)]] = simulate_backward_probs_1_seed(parameters_test_reparam, n_rows, simulated_sample_2[reverse[((i-1)*n_cols*n_rows+1):(n_rows*n_cols*i)],], n_cols, x_seed = true_field_2[rep_num,i])
+    true_field_1[rep_num,reverse[((i-1)*n_grid+1):(n_grid*i)]] = simulate_backward_probs_1_seed_htlp(parameters_test_reparam, n_rows, simulated_sample[reverse[((i-1)*n_cols*n_rows+1):(n_rows*n_cols*i)],], n_cols, x_seed = true_field_1[rep_num,i])
+    true_field_2[rep_num,reverse[((i-1)*n_grid+1):(n_grid*i)]] = simulate_backward_probs_1_seed_htlp(parameters_test_reparam, n_rows, simulated_sample_2[reverse[((i-1)*n_cols*n_rows+1):(n_rows*n_cols*i)],], n_cols, x_seed = true_field_2[rep_num,i])
   }
   # for (i in 1:n_grid){
   #   true_field_1[rep_num,((i-1)*n_grid+1):(n_grid*i)] = simulate_backward_probs_1(parameters_test_reparam, n_rows, simulated_sample[((i-1)*n_cols*n_rows+1):(n_rows*n_cols*i),], n_cols)
@@ -46,12 +46,15 @@ for (rep_num in 101:n_replicates){
   simulated_sample_drawn = data.frame(x = rep(NA,n_grid*n_grid), theta = rep(NA,n_grid*n_grid))
   for(i in 1:(n_grid*n_grid)){
     k_i = true_field_1[rep_num,i]
-    theta_1 = rwrappedcauchy(1, mu = circular(parameters[k_i,3]), rho = tanh(parameters[k_i,4]/2))
-    theta_1 = ifelse(as.numeric(theta_1)>pi, as.numeric(theta_1)-2*pi, as.numeric(theta_1))
+    theta_1 = rwrappedcauchy(1, mu = circular(parameters[k_i,3]), rho = parameters[k_i,5]/(1+sqrt(1-parameters[k_i,5]^2)))
+    simulated_sample_drawn$theta[i] = ifelse(as.numeric(theta_1)>pi, as.numeric(theta_1)-2*pi, as.numeric(theta_1))
     
     u = runif(1)
-    simulated_sample_drawn$theta[i] = ifelse(u<(1+parameters[k_i,5]*sin(theta_1-parameters[k_i,3]))/2, theta_1, -theta_1)
-    simulated_sample_drawn$x[i] = rweibull(1, scale = 1/(parameters[k_i,2]*(1-tanh(parameters[k_i,4])*cos(simulated_sample_drawn$theta[i]-parameters[k_i,3]))^(1/parameters[k_i,1])), shape = parameters[k_i,1])
+    if (parameters[k_i,4]==0){
+      simulated_sample_drawn$x[i] = parameters[k_i,2]*(-log(1-u)/(1-parameters[k_i,5]*cos(simulated_sample_drawn$theta[i] - parameters[k_i,3])))^parameters[k_i,1]
+    }else{
+      simulated_sample_drawn$x[i] = parameters[k_i,2]*(((1-u)^(-parameters[k_i,4]/parameters[k_i,1])-1)/(parameters[k_i,4]/parameters[k_i,1]*(1-parameters[k_i,5]*cos(simulated_sample_drawn$theta[i] - parameters[k_i,3]))))^parameters[k_i,1]
+    }
   }
   #ggplot(simulated_sample_drawn) + geom_point(aes(x=x, y = theta, col = as.factor(true_field_1[rep_num,]))) + theme_classic(base_size=20) + theme(legend.position = "none") + xlab("X") + ylab(expression(paste(Phi)))
   simulated_sample_drawn = as.matrix(simulated_sample_drawn)
@@ -59,19 +62,22 @@ for (rep_num in 101:n_replicates){
   simulated_sample_drawn_2 = data.frame(x = rep(NA,n_grid*n_grid), theta = rep(NA,n_grid*n_grid))
   for(i in 1:(n_grid*n_grid)){
     k_i = true_field_2[rep_num,i]
-    theta_1 = rwrappedcauchy(1, mu = circular(parameters[k_i,3]), rho = tanh(parameters[k_i,4]/2))
-    theta_1 = ifelse(as.numeric(theta_1)>pi, as.numeric(theta_1)-2*pi, as.numeric(theta_1))
+    theta_1 = rwrappedcauchy(1, mu = circular(parameters[k_i,3]), rho = parameters[k_i,5]/(1+sqrt(1-parameters[k_i,5]^2)))
+    simulated_sample_drawn_2$theta[i] = ifelse(as.numeric(theta_1)>pi, as.numeric(theta_1)-2*pi, as.numeric(theta_1))
     
     u = runif(1)
-    simulated_sample_drawn_2$theta[i] = ifelse(u<(1+parameters[k_i,5]*sin(theta_1-parameters[k_i,3]))/2, theta_1, -theta_1)
-    simulated_sample_drawn_2$x[i] = rweibull(1, scale = 1/(parameters[k_i,2]*(1-tanh(parameters[k_i,4])*cos(simulated_sample_drawn_2$theta[i]-parameters[k_i,3]))^(1/parameters[k_i,1])), shape = parameters[k_i,1])
+    if (parameters[k_i,4]==0){
+      simulated_sample_drawn_2$x[i] = parameters[k_i,2]*(-log(1-u)/(1-parameters[k_i,5]*cos(simulated_sample_drawn_2$theta[i] - parameters[k_i,3])))^parameters[k_i,1]
+    }else{
+      simulated_sample_drawn_2$x[i] = parameters[k_i,2]*(((1-u)^(-parameters[k_i,4]/parameters[k_i,1])-1)/(parameters[k_i,4]/parameters[k_i,1]*(1-parameters[k_i,5]*cos(simulated_sample_drawn_2$theta[i] - parameters[k_i,3]))))^parameters[k_i,1]
+    }
   }
   #ggplot(simulated_sample_drawn_2) + geom_point(aes(x=x, y = theta, col = as.factor(true_field_2[rep_num,]))) + theme_classic(base_size=20) + theme(legend.position = "none") + xlab("X") + ylab(expression(paste(Phi)))
   simulated_sample_drawn_2 = as.matrix(simulated_sample_drawn_2)
   
   ttime = proc.time()
   optimal = tryCatch(
-    optim(init_param, neg_likelihood_exact_real, method = "BFGS", control = list(trace=6, REPORT = 1, reltol = 1e-5), n_rows = n_rows, data_sample = simulated_sample_drawn, data_sample_2 = simulated_sample_drawn_2, n_cols = n_cols),
+    optim(init_param, neg_likelihood_exact_real_htlp, method = "BFGS", control = list(trace=6, REPORT = 1, reltol = 1e-5), n_rows = n_rows, data_sample = simulated_sample_drawn, data_sample_2 = simulated_sample_drawn_2, n_cols = n_cols),
     error = function(e){ 
       T
     }, finally = {}
@@ -83,23 +89,23 @@ for (rep_num in 101:n_replicates){
   
   estimated_param = rep(optimal$par[1],1+5*ncolor_test)
   
-  estimated_param[c(2,3,4,5,8,9)] = exp(optimal$par[c(2,3,4,5,8,9)])
-  estimated_param[c(6,7)] = 2*atan(optimal$par[c(6,7)])
-  estimated_param[c(10,11)] = tanh(optimal$par[c(10,11)])
+  # estimated_param[c(2,3,4,5,8,9)] = exp(optimal$par[c(2,3,4,5,8,9)])
+  # estimated_param[c(6,7)] = 2*atan(optimal$par[c(6,7)])
+  # estimated_param[c(10,11)] = exp(optimal$par[c(10,11)])/(1+exp(optimal$par[c(10,11)]))
   
-  # estimated_param[c(2,3,4,5,6,7,11,12,13)] = exp(optimal$par[c(2,3,4,5,6,7,11,12,13)])
-  # estimated_param[c(8,9,10)] = 2*atan(optimal$par[c(8,9,10)])
-  # estimated_param[c(14,15,16)] = tanh(optimal$par[c(14,15,16)])
+  estimated_param[c(2,3,4,5,6,7,11,12,13)] = exp(optimal$par[c(2,3,4,5,6,7,11,12,13)])
+  estimated_param[c(8,9,10)] = 2*atan(optimal$par[c(8,9,10)])
+  estimated_param[c(14,15,16)] = exp(optimal$par[c(14,15,16)])/(1+exp(optimal$par[c(14,15,16)]))
   
   parameter_estimates_1[rep_num, ] = estimated_param
   
   
-  estimated_probabilities_1 = find_back_probs(optimal$par, n_rows, simulated_sample_drawn, n_cols)
-  estimated_probabilities_2 = find_back_probs(optimal$par, n_rows, simulated_sample_drawn_2, n_cols)
-
+  estimated_probabilities_1 = find_back_probs_htlp(optimal$par, n_rows, simulated_sample_drawn, n_cols)
+  estimated_probabilities_2 = find_back_probs_htlp(optimal$par, n_rows, simulated_sample_drawn_2, n_cols)
+  
   estimated_field_1[rep_num, ] = apply(estimated_probabilities_1, 1, which.max)
   estimated_field_2[rep_num, ] = apply(estimated_probabilities_2, 1, which.max)
-  write.table(parameter_estimates_1[1:rep_num,], "C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_summer_quantile.csv")
+  write.table(parameter_estimates_1[1:rep_num,], "C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_fall_quantile_htlp.csv")
   print(rep_num)
 }
 
@@ -125,7 +131,8 @@ df$supp = c(rep("rho", n_replicates), rep(c("alpha", "beta", "mu", "kappa", "lam
 ggplot(df, aes(x=supp, y=y, fill=x)) +  geom_boxplot() + labs(fill = "Class") + scale_x_discrete(labels=c(expression(paste(alpha)),expression(paste(beta)),expression(paste(mu)),expression(paste(kappa)), expression(paste(lambda)), expression(paste(rho))), limits = c("alpha", "beta", "mu", "kappa", "lambda", "rho")) + xlab("Parameter") + ylab("Value") + theme_classic(base_size=20)# + coord_cartesian(ylim=c(-2,6))
 #dev.off()
 
-parameter_estimates_1 = as.matrix(read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_fall_quantile.csv"))
+
+parameter_estimates_1 = as.matrix(read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_summer_quantile_htlp.csv"))
 parameter_estimates_sorted = apply(parameter_estimates_1,2,sort)
 
 parameter_estimates_sorted[5,1] + parameters_test_reparam[1] - mean(parameter_estimates_sorted[,1])
