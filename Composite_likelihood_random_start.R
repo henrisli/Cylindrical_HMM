@@ -87,7 +87,7 @@ ncolor = 2
 
 ##
 #set.seed(12345)
-rho = 0.5
+rho = 0.6
 potts_param <- c(rep(0, ncolor), rho)
 x_potts <- matrix(1, nrow = n_grid, ncol = n_grid)
 foo <- packPotts(x_potts, ncolor)

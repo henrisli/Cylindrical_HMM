@@ -19,3 +19,28 @@ ggplot(data = world) +
   geom_sf() +
   coord_sf(xlim = c(-13, 22), ylim = c(62, 76), expand = FALSE) + scale_x_continuous(breaks = seq(-20,30,5)) + scale_y_continuous(breaks = seq(64,74,2)) + geom_rect(xmin=-3, xmax = 12, ymin = 66, ymax = 72, color = "blue", fill = NA, size = 1)
 dev.off()
+
+x_min = 106+36
+x_max = 175+36
+y_min = 132
+y_max = 201
+
+x_points = seq(106,175,3)
+y_points = seq(132,201,3)
+
+x_1 = current$x[x_min,y_min]
+x_2 = current$x[x_min,y_max]
+x_3 = current$x[x_max,y_min]
+x_4 = current$x[x_max,y_max]
+y_1 = current$y[x_min,y_min]
+y_2 = current$y[x_min,y_max]
+y_3 = current$y[x_max,y_min]
+y_4 = current$y[x_max,y_max]
+d=data.frame(x=c(x_2,x_1,x_3,x_4), y=c(y_2,y_1,y_3,y_4))
+
+ggplot(data = world) + geom_sf() + coord_sf(xlim = c(0, 10), ylim = c(60, 65), expand = FALSE) + geom_polygon(data=d, mapping=aes(x=x, y=y), color = "blue", fill = NA, size = 1) + xlab("") + ylab("") + 
+  annotate(geom = "text", x = 7.8, y = 62.5, label = "Romsdalsfjorden", fontface = "italic", color = "grey22", size = 3) + annotate(geom = "text", x = 6.8, y = 60.6, label = "Hardangerfjorden", fontface = "italic", color = "grey22", size = 3) + annotate(geom = "text", x = 6, y = 61.7, label = "Nordfjord", fontface = "italic", color = "grey22", size = 3) + annotate(geom = "text", x = 6.5, y = 61.4, label = "Sognefjorden", fontface = "italic", color = "grey22", size = 3) 
+
+
+
+

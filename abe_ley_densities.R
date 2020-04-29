@@ -95,7 +95,8 @@ contour(x=X_cor, y = y_cor, z = matrix(values,nrow=100), xlab = "x", ylab = expr
 X_cor = seq(0,0.5,l=100)
 y_cor = seq(-pi,pi,l=100)
 vals = cbind(rep(X_cor,100), rep(y_cor,each=100))
-parameters_test_reparam = read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_summer_2.csv")[,1]
+#parameters_test_reparam = read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_fall_3.csv")[,1]
+parameters_test_reparam = read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_single_2.csv")[,1]
 
 parameters = parameters_test_reparam
 
@@ -112,22 +113,26 @@ parameters
 values = apply(vals, MARGIN= 1, FUN = dabeley, param=parameters[1,])
 par(mgp=c(1.8,0.7,0),mar=c(3.7,3.7,2,2)+0.1)
 contour(x=X_cor, y = y_cor, z = matrix(values,nrow=100), xlab = "x", ylab = expression(paste(phi)), labcex = 0.01, cex.lab = 1.7)
-points(x = simulated_sample[,1], y = simulated_sample[,2], col = rgb(0,0,0,alpha=estimated_probabilities[,1]), pch=16, cex = 1)
-points(x = simulated_sample_2[,1], y = simulated_sample_2[,2], col = rgb(0,0,0,alpha=estimated_probabilities_2[,1]), pch=15, cex = 1)
+points(x = simulated_sample[,1], y = simulated_sample[,2], col = rgb(0,0,0,alpha=estimated_probabilities[,1]), pch=16, cex = 1.4) #2005 summer
+points(x = simulated_sample_2[,1], y = simulated_sample_2[,2], col = rgb(0,0,0,alpha=estimated_probabilities_2[,1]), pch=3, cex = 1.4) #2015 summer
+points(x = simulated_sample_3[,1], y = simulated_sample_3[,2], col = rgb(1,0,0,alpha=estimated_probabilities_3[,1]), pch=16, cex = 1.4) #2005 fall
+points(x = simulated_sample_4[,1], y = simulated_sample_4[,2], col = rgb(1,0,0,alpha=estimated_probabilities_4[,1]), pch=3, cex = 1.4) #2015 fall
 
 
 values = apply(vals, MARGIN= 1, FUN = dabeley, param=parameters[2,])
 par(mgp=c(1.8,0.7,0),mar=c(3.7,3.7,2,2)+0.1)
 contour(x=X_cor, y = y_cor, z = matrix(values,nrow=100), xlab = "x", ylab = expression(paste(phi)), labcex = 0.01, cex.lab = 1.7)
-points(x = simulated_sample[,1], y = simulated_sample[,2], col = rgb(0,0,0,alpha=estimated_probabilities[,2]), pch=16, cex = 1)
-points(x = simulated_sample_2[,1], y = simulated_sample_2[,2], col = rgb(0,0,0,alpha=estimated_probabilities_2[,2]), pch=15, cex = 1)
+points(x = simulated_sample[,1], y = simulated_sample[,2], col = rgb(0,0,0,alpha=estimated_probabilities[,2]), pch=16, cex = 1.4) #2005 summer
+points(x = simulated_sample_2[,1], y = simulated_sample_2[,2], col = rgb(0,0,0,alpha=estimated_probabilities_2[,2]), pch=3, cex = 1.4) #2015 summer
+points(x = simulated_sample_3[,1], y = simulated_sample_3[,2], col = rgb(1,0,0,alpha=estimated_probabilities_3[,2]), pch=16, cex = 1.4) #2005 fall
+points(x = simulated_sample_4[,1], y = simulated_sample_4[,2], col = rgb(1,0,0,alpha=estimated_probabilities_4[,2]), pch=3, cex = 1.4) #2015 fall
 
 
 values = apply(vals, MARGIN= 1, FUN = dabeley, param=parameters[3,])
 par(mgp=c(1.8,0.7,0),mar=c(3.7,3.7,2,2)+0.1)
 contour(x=X_cor, y = y_cor, z = matrix(values,nrow=100), xlab = "x", ylab = expression(paste(phi)), labcex = 0.01, cex.lab = 1.7)
-points(x = simulated_sample[,1], y = simulated_sample[,2], col = rgb(0,0,0,alpha=estimated_probabilities[,3]), pch=16, cex = 1)
-points(x = simulated_sample_2[,1], y = simulated_sample_2[,2], col = rgb(0,0,0,alpha=estimated_probabilities_2[,3]), pch=15, cex = 1)
+points(x = simulated_sample[,1], y = simulated_sample[,2], col = rgb(0,0,0,alpha=estimated_probabilities[,3]), pch=16, cex = 1.4)
+points(x = simulated_sample_2[,1], y = simulated_sample_2[,2], col = rgb(0,0,0,alpha=estimated_probabilities_2[,3]), pch=3, cex = 1.4)
 
 
 
@@ -143,8 +148,13 @@ for(i in 1:(1000)){
   simulated_sample$theta[i] = ifelse(u<(1+parameters[5]*sin(theta_1-parameters[3]))/2, theta_1, -theta_1)
   simulated_sample$x[i] = rweibull(1, scale = 1/(parameters[2]*(1-tanh(parameters[4])*cos(simulated_sample$theta[i]-parameters[3]))^(1/parameters[1])), shape = parameters[1])
 }
+#ggplot(simulated_sample) + geom_point(aes(x=x, y = theta)) + theme_classic(base_size=20) + theme(legend.position = "none") + xlab("X") + ylab(expression(paste(Phi))) + coord_cartesian(xlim = c(0,5), ylim = c(-pi,pi)) + geom_vline(xintercept = 1, color = "red")
+#ggplot(simulated_sample) + geom_point(aes(x=x, y = theta)) + theme_classic(base_size=20) + theme(legend.position = "none") + xlab("X") + ylab(expression(paste(Phi))) + coord_cartesian(xlim = c(0,5), ylim = c(-pi,pi)) + geom_hline(yintercept = -1.5, color = "red") + geom_hline(yintercept = -2, color = "red")
 ggplot(simulated_sample) + geom_point(aes(x=x, y = theta)) + theme_classic(base_size=20) + theme(legend.position = "none") + xlab("X") + ylab(expression(paste(Phi))) + coord_cartesian(xlim = c(0,5), ylim = c(-pi,pi))
 simulated_sample = as.matrix(simulated_sample)
 
+
 df <- data.frame(x=rep(0,1000),y=rep(0,1000),dx=simulated_sample[,1]*cos(simulated_sample[,2]),dy=simulated_sample[,1]*sin(simulated_sample[,2]))
-ggplot(data=df) + geom_segment(aes(x=x, y=y, xend=x+dx, yend=y+dy), arrow = arrow(length = unit(0.15,"cm"))) + theme_classic(base_size=20) + xlab("u") + ylab("v") + coord_cartesian(xlim = c(-5,5), ylim = c(-5,5)) 
+#ggplot(data=df) + geom_segment(aes(x=x, y=y, xend=x+dx, yend=y+dy), arrow = arrow(length = unit(0.15,"cm"))) + xlab("u") + ylab("v") + coord_cartesian(xlim = c(-5,5), ylim = c(-5,5))  + theme_classic(base_size=20) + geom_point(data=dat, aes(x=x,y=y), size=34,shape=1,color="red")
+#ggplot(data=df) + geom_segment(aes(x=x, y=y, xend=x+dx, yend=y+dy), arrow = arrow(length = unit(0.15,"cm"))) + xlab("u") + ylab("v") + coord_cartesian(xlim = c(-5,5), ylim = c(-5,5))  + theme_classic(base_size=20) + geom_segment(aes(x=10*cos(-1.5), y =10*sin(-1.5), xend = 0, yend = 0), color = "red") + geom_segment(aes(x=10*cos(-2), y =10*sin(-2), xend = 0, yend = 0), color = "red")
+ggplot(data=df) + geom_segment(aes(x=x, y=y, xend=x+dx, yend=y+dy), arrow = arrow(length = unit(0.15,"cm"))) + xlab("u") + ylab("v") + coord_cartesian(xlim = c(-5,5), ylim = c(-5,5))  + theme_classic(base_size=20)
