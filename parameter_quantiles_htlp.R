@@ -1,4 +1,5 @@
-parameters_test_reparam = read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_summer_2_htlp.csv")[,1]
+#parameters_test_reparam = read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_summer_2_htlp.csv")[,1]
+parameters_test_reparam = read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_sinmod_3_htlp.csv")[,1]
 
 parameters = parameters_test_reparam
 
@@ -29,7 +30,7 @@ estimated_field_1 = matrix(NA, nrow = n_replicates, ncol = n_grid^2)
 estimated_field_2 = matrix(NA, nrow = n_replicates, ncol = n_grid^2)
 reverse = as.vector(t(matrix(1:(n_cols^2), nrow=n_cols)))
 
-for (rep_num in 36:n_replicates){
+for (rep_num in 1:n_replicates){
   ## Draw random field ##
   true_field_1[rep_num,1:n_cols] = simulate_backward_probs_1_htlp(parameters_test_reparam, n_rows, simulated_sample[1:n_cols,], n_cols)
   true_field_2[rep_num,1:n_cols] = simulate_backward_probs_1_htlp(parameters_test_reparam, n_rows, simulated_sample_2[1:n_cols,], n_cols)
@@ -105,7 +106,8 @@ for (rep_num in 36:n_replicates){
   
   estimated_field_1[rep_num, ] = apply(estimated_probabilities_1, 1, which.max)
   estimated_field_2[rep_num, ] = apply(estimated_probabilities_2, 1, which.max)
-  write.table(parameter_estimates_1[1:rep_num,], "C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_fall_quantile_htlp.csv")
+  #write.table(parameter_estimates_1[1:rep_num,], "C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_fall_quantile_htlp.csv")
+  write.table(parameter_estimates_1[1:rep_num,], "C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_sinmod_quantile_htlp.csv")
   print(rep_num)
 }
 
@@ -132,7 +134,8 @@ ggplot(df, aes(x=supp, y=y, fill=x)) +  geom_boxplot() + labs(fill = "Class") + 
 #dev.off()
 
 
-parameter_estimates_1 = as.matrix(read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_summer_quantile_htlp.csv"))
+#parameter_estimates_1 = as.matrix(read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_summer_quantile_htlp.csv"))
+parameter_estimates_1 = as.matrix(read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_sinmod_quantile_htlp.csv"))
 parameter_estimates_sorted = apply(parameter_estimates_1,2,sort)
 
 parameter_estimates_sorted[5,1] + parameters_test_reparam[1] - mean(parameter_estimates_sorted[,1])

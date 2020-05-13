@@ -1,4 +1,5 @@
-parameters_test_reparam = read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_fall_3.csv")[,1]
+# parameters_test_reparam = read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_fall_3.csv")[,1]
+parameters_test_reparam = read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_sinmod_3.csv")[,1]
 
 parameters = parameters_test_reparam
 
@@ -29,7 +30,7 @@ estimated_field_1 = matrix(NA, nrow = n_replicates, ncol = n_grid^2)
 estimated_field_2 = matrix(NA, nrow = n_replicates, ncol = n_grid^2)
 reverse = as.vector(t(matrix(1:(n_cols^2), nrow=n_cols)))
 
-for (rep_num in 101:n_replicates){
+for (rep_num in 177:n_replicates){
   ## Draw random field ##
   true_field_1[rep_num,1:n_cols] = simulate_backward_probs_1(parameters_test_reparam, n_rows, simulated_sample[1:n_cols,], n_cols)
   true_field_2[rep_num,1:n_cols] = simulate_backward_probs_1(parameters_test_reparam, n_rows, simulated_sample_2[1:n_cols,], n_cols)
@@ -83,13 +84,13 @@ for (rep_num in 101:n_replicates){
   
   estimated_param = rep(optimal$par[1],1+5*ncolor_test)
   
-  estimated_param[c(2,3,4,5,8,9)] = exp(optimal$par[c(2,3,4,5,8,9)])
-  estimated_param[c(6,7)] = 2*atan(optimal$par[c(6,7)])
-  estimated_param[c(10,11)] = tanh(optimal$par[c(10,11)])
+  # estimated_param[c(2,3,4,5,8,9)] = exp(optimal$par[c(2,3,4,5,8,9)])
+  # estimated_param[c(6,7)] = 2*atan(optimal$par[c(6,7)])
+  # estimated_param[c(10,11)] = tanh(optimal$par[c(10,11)])
   
-  # estimated_param[c(2,3,4,5,6,7,11,12,13)] = exp(optimal$par[c(2,3,4,5,6,7,11,12,13)])
-  # estimated_param[c(8,9,10)] = 2*atan(optimal$par[c(8,9,10)])
-  # estimated_param[c(14,15,16)] = tanh(optimal$par[c(14,15,16)])
+  estimated_param[c(2,3,4,5,6,7,11,12,13)] = exp(optimal$par[c(2,3,4,5,6,7,11,12,13)])
+  estimated_param[c(8,9,10)] = 2*atan(optimal$par[c(8,9,10)])
+  estimated_param[c(14,15,16)] = tanh(optimal$par[c(14,15,16)])
   
   parameter_estimates_1[rep_num, ] = estimated_param
   
@@ -99,7 +100,8 @@ for (rep_num in 101:n_replicates){
 
   estimated_field_1[rep_num, ] = apply(estimated_probabilities_1, 1, which.max)
   estimated_field_2[rep_num, ] = apply(estimated_probabilities_2, 1, which.max)
-  write.table(parameter_estimates_1[1:rep_num,], "C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_summer_quantile.csv")
+  # write.table(parameter_estimates_1[1:rep_num,], "C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_summer_quantile.csv")
+  write.table(parameter_estimates_1[1:rep_num,], "C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_sinmod_quantile.csv")
   print(rep_num)
 }
 
@@ -125,11 +127,12 @@ df$supp = c(rep("rho", n_replicates), rep(c("alpha", "beta", "mu", "kappa", "lam
 ggplot(df, aes(x=supp, y=y, fill=x)) +  geom_boxplot() + labs(fill = "Class") + scale_x_discrete(labels=c(expression(paste(alpha)),expression(paste(beta)),expression(paste(mu)),expression(paste(kappa)), expression(paste(lambda)), expression(paste(rho))), limits = c("alpha", "beta", "mu", "kappa", "lambda", "rho")) + xlab("Parameter") + ylab("Value") + theme_classic(base_size=20)# + coord_cartesian(ylim=c(-2,6))
 #dev.off()
 
-parameter_estimates_1 = as.matrix(read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_fall_quantile.csv"))
+# parameter_estimates_1 = as.matrix(read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_fall_quantile.csv"))
+parameter_estimates_1 = as.matrix(read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_sinmod_quantile.csv"))
 parameter_estimates_sorted = apply(parameter_estimates_1,2,sort)
 
 parameter_estimates_sorted[5,1] + parameters_test_reparam[1] - mean(parameter_estimates_sorted[,1])
 parameter_estimates_sorted[195,1] + parameters_test_reparam[1] - mean(parameter_estimates_sorted[,1])
-matrix(parameter_estimates_sorted[5,2:(ncolor_test*5+1)],ncol=5)
+matrix(parameter_estimates_sorted[5,2:(ncolor_test*5+1)],ncol=5) + parameters - matrix(apply(parameter_estimates_sorted[,2:(ncolor_test*5+1)], 2, mean),ncol=5)
 parameters
-matrix(parameter_estimates_sorted[195,2:(ncolor_test*5+1)],ncol=5)
+matrix(parameter_estimates_sorted[195,2:(ncolor_test*5+1)],ncol=5) + parameters - matrix(apply(parameter_estimates_sorted[,2:(ncolor_test*5+1)], 2, mean),ncol=5)

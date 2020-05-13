@@ -102,7 +102,8 @@ X_cor = seq(0,0.5,l=100)
 y_cor = seq(-pi,pi,l=100)
 vals = cbind(rep(X_cor,100), rep(y_cor,each=100))
 #parameters_test_reparam = read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_summer_2_htlp.csv")[,1]
-parameters_test_reparam = read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_single_3_htlp.csv")[,1]
+# parameters_test_reparam = read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_single_3_htlp.csv")[,1]
+parameters_test_reparam = read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_sinmod_3_htlp.csv")[,1]
 
 parameters = parameters_test_reparam
 
@@ -121,8 +122,8 @@ par(mgp=c(1.8,0.7,0),mar=c(3.7,3.7,2,2)+0.1)
 contour(x=X_cor, y = y_cor, z = matrix(values,nrow=100), xlab = "x", ylab = expression(paste(phi)), labcex = 0.01, cex.lab = 1.7)
 points(x = simulated_sample[,1], y = simulated_sample[,2], col = rgb(0,0,0,alpha=estimated_probabilities[,1]), pch=16, cex = 1.4) #2005 summer
 points(x = simulated_sample_2[,1], y = simulated_sample_2[,2], col = rgb(0,0,0,alpha=estimated_probabilities_2[,1]), pch=3, cex = 1.4) #2015 summer
-points(x = simulated_sample_3[,1], y = simulated_sample_3[,2], col = rgb(1,0,0,alpha=estimated_probabilities_3[,1]), pch=16, cex = 1.4) #2005 fall
-points(x = simulated_sample_4[,1], y = simulated_sample_4[,2], col = rgb(1,0,0,alpha=estimated_probabilities_4[,1]), pch=3, cex = 1.4) #2015 fall
+#points(x = simulated_sample_3[,1], y = simulated_sample_3[,2], col = rgb(1,0,0,alpha=estimated_probabilities_3[,1]), pch=16, cex = 1.4) #2005 fall
+#points(x = simulated_sample_4[,1], y = simulated_sample_4[,2], col = rgb(1,0,0,alpha=estimated_probabilities_4[,1]), pch=3, cex = 1.4) #2015 fall
 
 
 values = apply(vals, MARGIN= 1, FUN = dhtlp, param=parameters[2,])
@@ -130,8 +131,8 @@ par(mgp=c(1.8,0.7,0),mar=c(3.7,3.7,2,2)+0.1)
 contour(x=X_cor, y = y_cor, z = matrix(values,nrow=100), xlab = "x", ylab = expression(paste(phi)), labcex = 0.01, cex.lab = 1.7)
 points(x = simulated_sample[,1], y = simulated_sample[,2], col = rgb(0,0,0,alpha=estimated_probabilities[,2]), pch=16, cex = 1.4) #2005 summer
 points(x = simulated_sample_2[,1], y = simulated_sample_2[,2], col = rgb(0,0,0,alpha=estimated_probabilities_2[,2]), pch=3, cex = 1.4) #2015 summer
-points(x = simulated_sample_3[,1], y = simulated_sample_3[,2], col = rgb(1,0,0,alpha=estimated_probabilities_3[,2]), pch=16, cex = 1.4) #2005 fall
-points(x = simulated_sample_4[,1], y = simulated_sample_4[,2], col = rgb(1,0,0,alpha=estimated_probabilities_4[,2]), pch=3, cex = 1.4) #2015 fall
+#points(x = simulated_sample_3[,1], y = simulated_sample_3[,2], col = rgb(1,0,0,alpha=estimated_probabilities_3[,2]), pch=16, cex = 1.4) #2005 fall
+#points(x = simulated_sample_4[,1], y = simulated_sample_4[,2], col = rgb(1,0,0,alpha=estimated_probabilities_4[,2]), pch=3, cex = 1.4) #2015 fall
 
 
 values = apply(vals, MARGIN= 1, FUN = dhtlp, param=parameters[3,])
@@ -139,8 +140,8 @@ par(mgp=c(1.8,0.7,0),mar=c(3.7,3.7,2,2)+0.1)
 contour(x=X_cor, y = y_cor, z = matrix(values,nrow=100), xlab = "x", ylab = expression(paste(phi)), labcex = 0.01, cex.lab = 1.7)
 points(x = simulated_sample[,1], y = simulated_sample[,2], col = rgb(0,0,0,alpha=estimated_probabilities[,3]), pch=16, cex = 1.4) #2005 summer
 points(x = simulated_sample_2[,1], y = simulated_sample_2[,2], col = rgb(0,0,0,alpha=estimated_probabilities_2[,3]), pch=3, cex = 1.4) #2015 summer
-points(x = simulated_sample_3[,1], y = simulated_sample_3[,2], col = rgb(1,0,0,alpha=estimated_probabilities_3[,3]), pch=16, cex = 1.4) #2005 fall
-points(x = simulated_sample_4[,1], y = simulated_sample_4[,2], col = rgb(1,0,0,alpha=estimated_probabilities_4[,3]), pch=3, cex = 1.4) #2015 fall
+# points(x = simulated_sample_3[,1], y = simulated_sample_3[,2], col = rgb(1,0,0,alpha=estimated_probabilities_3[,3]), pch=16, cex = 1.4) #2005 fall
+# points(x = simulated_sample_4[,1], y = simulated_sample_4[,2], col = rgb(1,0,0,alpha=estimated_probabilities_4[,3]), pch=3, cex = 1.4) #2015 fall
 
 
 

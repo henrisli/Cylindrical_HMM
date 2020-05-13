@@ -28,7 +28,7 @@ estimated_field_3 = matrix(NA, nrow = n_replicates, ncol = n_grid^2)
 estimated_field_4 = matrix(NA, nrow = n_replicates, ncol = n_grid^2)
 reverse = as.vector(t(matrix(1:(n_cols^2), nrow=n_cols)))
 
-for (rep_num in 1:n_replicates){
+for (rep_num in 85:n_replicates){
   ## Draw random field ##
   true_field_1[rep_num,1:n_cols] = simulate_backward_probs_1_htlp(parameters_test_reparam, n_rows, simulated_sample[1:n_cols,], n_cols)
   true_field_2[rep_num,1:n_cols] = simulate_backward_probs_1_htlp(parameters_test_reparam, n_rows, simulated_sample_2[1:n_cols,], n_cols)
@@ -170,6 +170,6 @@ parameter_estimates_sorted = apply(parameter_estimates_1,2,sort)
 
 parameter_estimates_sorted[5,1] + parameters_test_reparam[1] - mean(parameter_estimates_sorted[,1])
 parameter_estimates_sorted[195,1] + parameters_test_reparam[1] - mean(parameter_estimates_sorted[,1])
-matrix(parameter_estimates_sorted[5,2:(ncolor_test*5+1)],ncol=5) + parameters - matrix(apply(parameter_estimates_sorted[,2:11], 2, mean),ncol=5)
+matrix(parameter_estimates_sorted[5,2:(ncolor_test*5+1)],ncol=5) + parameters - matrix(apply(parameter_estimates_sorted[,2:16], 2, mean),ncol=5)
 parameters
-matrix(parameter_estimates_sorted[195,2:(ncolor_test*5+1)],ncol=5) + parameters - matrix(apply(parameter_estimates_sorted[,2:11], 2, mean),ncol=5)
+matrix(parameter_estimates_sorted[195,2:(ncolor_test*5+1)],ncol=5) + parameters - matrix(apply(parameter_estimates_sorted[,2:16], 2, mean),ncol=5)
