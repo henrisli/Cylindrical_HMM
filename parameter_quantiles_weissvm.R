@@ -30,7 +30,7 @@ estimated_field_1 = matrix(NA, nrow = n_replicates, ncol = n_grid^2)
 estimated_field_2 = matrix(NA, nrow = n_replicates, ncol = n_grid^2)
 reverse = as.vector(t(matrix(1:(n_cols^2), nrow=n_cols)))
 
-for (rep_num in 177:n_replicates){
+for (rep_num in 1:n_replicates){
   ## Draw random field ##
   true_field_1[rep_num,1:n_cols] = simulate_backward_probs_1(parameters_test_reparam, n_rows, simulated_sample[1:n_cols,], n_cols)
   true_field_2[rep_num,1:n_cols] = simulate_backward_probs_1(parameters_test_reparam, n_rows, simulated_sample_2[1:n_cols,], n_cols)

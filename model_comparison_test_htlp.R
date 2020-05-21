@@ -1,16 +1,16 @@
-par_est = read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_summer_2_htlp.csv")[,1]
+# par_est = read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_summer_2_htlp.csv")[,1]
 # par_est = read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_single_3_htlp.csv")[,1]
-# par_est = read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_sinmod_3.csv")[,1]
+par_est = read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_sinmod_3_htlp.csv")[,1]
 
 parameters = par_est
 
-parameters[c(2,3,4,5,8,9)] = exp(parameters[c(2,3,4,5,8,9)])
-parameters[c(6,7)] = 2*atan(parameters[c(6,7)])
-parameters[c(10,11)] = exp(parameters[c(10,11)])/(1+exp(parameters[c(10,11)]))
+# parameters[c(2,3,4,5,8,9)] = exp(parameters[c(2,3,4,5,8,9)])
+# parameters[c(6,7)] = 2*atan(parameters[c(6,7)])
+# parameters[c(10,11)] = exp(parameters[c(10,11)])/(1+exp(parameters[c(10,11)]))
 
-# parameters[c(2,3,4,5,6,7,11,12,13)] = exp(parameters[c(2,3,4,5,6,7,11,12,13)])
-# parameters[c(8,9,10)] = 2*atan(parameters[c(8,9,10)])
-# parameters[c(14,15,16)] = exp(parameters[c(14,15,16)])/(1+exp(parameters[c(14,15,16)]))
+parameters[c(2,3,4,5,6,7,11,12,13)] = exp(parameters[c(2,3,4,5,6,7,11,12,13)])
+parameters[c(8,9,10)] = 2*atan(parameters[c(8,9,10)])
+parameters[c(14,15,16)] = exp(parameters[c(14,15,16)])/(1+exp(parameters[c(14,15,16)]))
 
 parameters = matrix(parameters[2:(5*ncolor_test+1)],nrow=ncolor_test)
 parameters

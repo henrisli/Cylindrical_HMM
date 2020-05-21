@@ -1,16 +1,16 @@
-# par_est = read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_fall_3.csv")[,1]
-par_est = read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_single_2.csv")[,1]
-# par_est = read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_sinmod_3.csv")[,1]
+# par_est = read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_summer_2.csv")[,1]
+# par_est = read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_single_2.csv")[,1]
+par_est = read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_sinmod_3.csv")[,1]
 
 parameters = par_est
 
-parameters[c(2,3,4,5,8,9)] = exp(parameters[c(2,3,4,5,8,9)])
-parameters[c(6,7)] = 2*atan(parameters[c(6,7)])
-parameters[c(10,11)] = tanh(parameters[c(10,11)])
+# parameters[c(2,3,4,5,8,9)] = exp(parameters[c(2,3,4,5,8,9)])
+# parameters[c(6,7)] = 2*atan(parameters[c(6,7)])
+# parameters[c(10,11)] = tanh(parameters[c(10,11)])
 
-# parameters[c(2,3,4,5,6,7,11,12,13)] = exp(parameters[c(2,3,4,5,6,7,11,12,13)])
-# parameters[c(8,9,10)] = 2*atan(parameters[c(8,9,10)])
-# parameters[c(14,15,16)] = tanh(parameters[c(14,15,16)])
+parameters[c(2,3,4,5,6,7,11,12,13)] = exp(parameters[c(2,3,4,5,6,7,11,12,13)])
+parameters[c(8,9,10)] = 2*atan(parameters[c(8,9,10)])
+parameters[c(14,15,16)] = tanh(parameters[c(14,15,16)])
 
 parameters = matrix(parameters[2:(5*ncolor_test+1)],nrow=ncolor_test)
 parameters
@@ -156,6 +156,7 @@ mean(energy_scores_1_circ)
 mean(energy_scores_1_lin)
 mean(energy_scores_2_circ)
 mean(energy_scores_2_lin)
+
 
 num_grid = 26
 x_grid = seq(-1.5,1.5, l = num_grid)
