@@ -70,43 +70,43 @@ r_sample_4 = as.vector(current_4$r[x_points, y_points])
 theta_sample_4 = as.vector(current_4$theta[x_points, y_points])
 df <- data.frame(x=rep(current$x[x_points],length(y_points)),y=rep(current$y[y_points],each=length(x_points)),dx=r_sample*cos(theta_sample)*3*2.5,dy=r_sample*sin(theta_sample)*3)
 df_red_arrow = data.frame(x = 2.625, dx=3*0.5*2.5, dy = 0, y = 65.5)
-ggplot(data=df) + geom_segment(data = df_red_arrow, aes(x = x, y = y, xend = x+dx, yend = y+dy),col="red", arrow = arrow(length = unit(0.08,"cm"))) + geom_segment(aes(x=x, y=y, xend=x+dx, yend=y+dy), arrow = arrow(length = unit(0.08,"cm"))) + theme_bw(base_size=20) + xlab("Longitude (°E)") + ylab("Latitude (°N)") + coord_cartesian(xlim = c(-3-1.875,12+1.875), ylim = c(65.25,72.75))# + coord_fixed(ratio=1) 
+ggplot(data=df) + geom_segment(data = df_red_arrow, aes(x = x, y = y, xend = x+dx, yend = y+dy),col="red", arrow = arrow(length = unit(0.08,"cm"))) + geom_segment(aes(x=x, y=y, xend=x+dx, yend=y+dy), arrow = arrow(length = unit(0.08,"cm"))) + theme_bw(base_size=30) + xlab("Longitude (°E)") + ylab("Latitude (°N)") + coord_cartesian(xlim = c(-3-1.875,12+1.875), ylim = c(65.25,72.75))# + coord_fixed(ratio=1) 
 #ggplot(data=df, aes(x=x, y=y, col = as.factor(apply(estimated_probabilities, 1, which.max)))) + geom_segment(aes(xend=x+dx, yend=y+dy), arrow = arrow(length = unit(0.08,"cm"))) + theme_bw(base_size=20) + theme(legend.position="none") + xlab("Longitude (°E)") + ylab("Latitude (°N)") + scale_color_manual(values = colorss) + coord_cartesian(xlim = c(-3-1.875,12+1.875), ylim = c(65.25,72.75))
 #ggplot(data=df, aes(x=x, y=y, col = as.factor(apply(estimated_probabilities, 1, which.max)), alpha = apply(estimated_probabilities, 1, max))) + geom_segment(aes(xend=x+dx, yend=y+dy), arrow = arrow(length = unit(0.08,"cm"))) + theme_bw(base_size=20) + theme(legend.position="none") + xlab("Longitude (°E)") + ylab("Latitude (°N)") + scale_color_manual(values = colorss) + coord_cartesian(xlim = c(-3-1.875,12+1.875), ylim = c(65.25,72.75))
 
 df_2 <- data.frame(x=rep(current_2$x[x_points_2],length(y_points_2)),y=rep(current_2$y[y_points_2],each=length(x_points_2)),dx=r_sample_2*cos(theta_sample_2)*3*2.5,dy=r_sample_2*sin(theta_sample_2)*3)
-ggplot(data=df_2, aes(x=x, y=y)) + geom_segment(data = df_red_arrow, aes(x = x, y = y, xend = x+dx, yend = y+dy),col="red", arrow = arrow(length = unit(0.08,"cm"))) + geom_segment(aes(xend=x+dx, yend=y+dy), arrow = arrow(length = unit(0.08,"cm"))) + theme_bw(base_size=20) + xlab("Longitude (°E)") + ylab("Latitude (°N)") + coord_cartesian(xlim = c(-3-1.875,12+1.875), ylim = c(65.25,72.75))# + coord_fixed(ratio=1) 
+ggplot(data=df_2, aes(x=x, y=y)) + geom_segment(data = df_red_arrow, aes(x = x, y = y, xend = x+dx, yend = y+dy),col="red", arrow = arrow(length = unit(0.08,"cm"))) + geom_segment(aes(xend=x+dx, yend=y+dy), arrow = arrow(length = unit(0.08,"cm"))) + theme_bw(base_size=30) + xlab("Longitude (°E)") + ylab("Latitude (°N)") + coord_cartesian(xlim = c(-3-1.875,12+1.875), ylim = c(65.25,72.75))# + coord_fixed(ratio=1) 
 #ggplot(data=df_2, aes(x=x, y=y, col = as.factor(apply(estimated_probabilities_2, 1, which.max)))) + geom_segment(aes(xend=x+dx, yend=y+dy), arrow = arrow(length = unit(0.08,"cm"))) + theme_bw(base_size=20) + theme(legend.position="none") + xlab("Longitude (°E)") + ylab("Latitude (°N)") + scale_color_manual(values = colorss) + coord_cartesian(xlim = c(-3-1.875,12+1.875), ylim = c(65.25,72.75))
 #ggplot(data=df_2, aes(x=x, y=y, col = as.factor(apply(estimated_probabilities_2, 1, which.max)), alpha = apply(estimated_probabilities_2, 1, max))) + geom_segment(aes(xend=x+dx, yend=y+dy), arrow = arrow(length = unit(0.08,"cm"))) + theme_bw(base_size=20) + theme(legend.position="none") + xlab("Longitude (°E)") + ylab("Latitude (°N)") + scale_color_manual(values = colorss) + coord_cartesian(xlim = c(-3-1.875,12+1.875), ylim = c(65.25,72.75))
 
 df_3 <- data.frame(x=rep(current_3$x[x_points],length(y_points)),y=rep(current_3$y[y_points],each=length(x_points)),dx=r_sample_3*cos(theta_sample_3)*3*2.5,dy=r_sample_3*sin(theta_sample_3)*3)
-ggplot(data=df_3, aes(x=x, y=y)) + geom_segment(data = df_red_arrow, aes(x = x, y = y, xend = x+dx, yend = y+dy),col="red", arrow = arrow(length = unit(0.08,"cm"))) + geom_segment(aes(xend=x+dx, yend=y+dy), arrow = arrow(length = unit(0.08,"cm"))) + theme_bw(base_size=20) + xlab("Longitude (°E)") + ylab("Latitude (°N)") + coord_cartesian(xlim = c(-3-1.875,12+1.875), ylim = c(65.25,72.75))# + coord_fixed(ratio=1) 
+ggplot(data=df_3, aes(x=x, y=y)) + geom_segment(data = df_red_arrow, aes(x = x, y = y, xend = x+dx, yend = y+dy),col="red", arrow = arrow(length = unit(0.08,"cm"))) + geom_segment(aes(xend=x+dx, yend=y+dy), arrow = arrow(length = unit(0.08,"cm"))) + theme_bw(base_size=30) + xlab("Longitude (°E)") + ylab("Latitude (°N)") + coord_cartesian(xlim = c(-3-1.875,12+1.875), ylim = c(65.25,72.75))# + coord_fixed(ratio=1) 
 #ggplot(data=df_3, aes(x=x, y=y, col = as.factor(apply(estimated_probabilities_3, 1, which.max)))) + geom_segment(aes(xend=x+dx, yend=y+dy), arrow = arrow(length = unit(0.08,"cm"))) + theme_bw(base_size=20) + theme(legend.position="none") + xlab("Longitude (°E)") + ylab("Latitude (°N)") + scale_color_manual(values = colorss) + coord_cartesian(xlim = c(-3-1.875,12+1.875), ylim = c(65.25,72.75))
 #ggplot(data=df_3, aes(x=x, y=y, col = as.factor(apply(estimated_probabilities_3, 1, which.max)), alpha = apply(estimated_probabilities_3, 1, max))) + geom_segment(aes(xend=x+dx, yend=y+dy), arrow = arrow(length = unit(0.08,"cm"))) + theme_bw(base_size=20) + theme(legend.position="none") + xlab("Longitude (°E)") + ylab("Latitude (°N)") + scale_color_manual(values = colorss) + coord_cartesian(xlim = c(-3-1.875,12+1.875), ylim = c(65.25,72.75))
 
 df_4 <- data.frame(x=rep(current_4$x[x_points],length(y_points)),y=rep(current_4$y[y_points],each=length(x_points)),dx=r_sample_4*cos(theta_sample_4)*3*2.5,dy=r_sample_4*sin(theta_sample_4)*3)
-ggplot(data=df_4, aes(x=x, y=y)) + geom_segment(data = df_red_arrow, aes(x = x, y = y, xend = x+dx, yend = y+dy),col="red", arrow = arrow(length = unit(0.08,"cm"))) + geom_segment(aes(xend=x+dx, yend=y+dy), arrow = arrow(length = unit(0.08,"cm"))) + theme_bw(base_size=20) + xlab("Longitude (°E)") + ylab("Latitude (°N)") + coord_cartesian(xlim = c(-3-1.875,12+1.875), ylim = c(65.25,72.75))# + coord_fixed(ratio=1) 
+ggplot(data=df_4, aes(x=x, y=y)) + geom_segment(data = df_red_arrow, aes(x = x, y = y, xend = x+dx, yend = y+dy),col="red", arrow = arrow(length = unit(0.08,"cm"))) + geom_segment(aes(xend=x+dx, yend=y+dy), arrow = arrow(length = unit(0.08,"cm"))) + theme_bw(base_size=30) + xlab("Longitude (°E)") + ylab("Latitude (°N)") + coord_cartesian(xlim = c(-3-1.875,12+1.875), ylim = c(65.25,72.75))# + coord_fixed(ratio=1) 
 #ggplot(data=df_4, aes(x=x, y=y, col = as.factor(apply(estimated_probabilities_4, 1, which.max)))) + geom_segment(aes(xend=x+dx, yend=y+dy), arrow = arrow(length = unit(0.08,"cm"))) + theme_bw(base_size=20) + theme(legend.position="none") + xlab("Longitude (°E)") + ylab("Latitude (°N)") + scale_color_manual(values = colorss) + coord_cartesian(xlim = c(-3-1.875,12+1.875), ylim = c(65.25,72.75))
 #ggplot(data=df_4, aes(x=x, y=y, col = as.factor(apply(estimated_probabilities_4, 1, which.max)), alpha = apply(estimated_probabilities_4, 1, max))) + geom_segment(aes(xend=x+dx, yend=y+dy), arrow = arrow(length = unit(0.08,"cm"))) + theme_bw(base_size=20) + theme(legend.position="none") + xlab("Longitude (°E)") + ylab("Latitude (°N)") + scale_color_manual(values = colorss) + coord_cartesian(xlim = c(-3-1.875,12+1.875), ylim = c(65.25,72.75))
 
 
 data_set = data.frame(x = r_sample, theta = theta_sample)
-ggplot(data_set) + geom_point(aes(x=x, y = theta)) + theme_classic(base_size=20) + xlab("X") + ylab(expression(paste(Phi))) + coord_cartesian(xlim = c(0,0.5))
+ggplot(data_set) + geom_point(aes(x=x, y = theta)) + theme_classic(base_size=30) + xlab("X") + ylab(expression(paste(Phi))) + coord_cartesian(xlim = c(0,0.5))
 #ggplot(data_set) + geom_point(aes(x=x, y = theta, col = as.factor(apply(estimated_probabilities, 1, which.max)))) + theme_classic(base_size=20) + theme(legend.position = "none") + xlab("X") + ylab(expression(paste(Phi))) + coord_cartesian(xlim = c(0,0.5)) + scale_color_manual(values = colorss)
 #ggplot(data_set) + geom_point(aes(x=x, y = theta, col = as.factor(apply(estimated_probabilities, 1, which.max)), alpha = apply(estimated_probabilities, 1, max))) + theme_classic(base_size=20) + theme(legend.position = "none") + xlab("X") + ylab(expression(paste(Phi))) + coord_cartesian(xlim = c(0,0.5)) + scale_color_manual(values = colorss)
 
 data_set_2 = data.frame(x = r_sample_2, theta = theta_sample_2)
-ggplot(data_set_2) + geom_point(aes(x=x, y = theta)) + theme_classic(base_size=20) + xlab("X") + ylab(expression(paste(Phi))) + coord_cartesian(xlim = c(0,0.5))
+ggplot(data_set_2) + geom_point(aes(x=x, y = theta)) + theme_classic(base_size=30) + xlab("X") + ylab(expression(paste(Phi))) + coord_cartesian(xlim = c(0,0.5))
 #ggplot(data_set_2) + geom_point(aes(x=x, y = theta, col = as.factor(apply(estimated_probabilities_2, 1, which.max)))) + theme_classic(base_size=20) + theme(legend.position = "none") + xlab("X") + ylab(expression(paste(Phi))) + coord_cartesian(xlim = c(0,0.5)) + scale_color_manual(values = colorss)
 #ggplot(data_set_2) + geom_point(aes(x=x, y = theta, col = as.factor(apply(estimated_probabilities_2, 1, which.max)), alpha = apply(estimated_probabilities_2, 1, max))) + theme_classic(base_size=20) + theme(legend.position = "none") + xlab("X") + ylab(expression(paste(Phi))) + coord_cartesian(xlim = c(0,0.5)) + scale_color_manual(values = colorss)
 
 data_set_3 = data.frame(x = r_sample_3, theta = theta_sample_3)
-ggplot(data_set_3) + geom_point(aes(x=x, y = theta)) + theme_classic(base_size=20) + xlab("X") + ylab(expression(paste(Phi))) + coord_cartesian(xlim = c(0,0.5))
+ggplot(data_set_3) + geom_point(aes(x=x, y = theta)) + theme_classic(base_size=30) + xlab("X") + ylab(expression(paste(Phi))) + coord_cartesian(xlim = c(0,0.5))
 #ggplot(data_set_3) + geom_point(aes(x=x, y = theta, col = as.factor(apply(estimated_probabilities_3, 1, which.max)))) + theme_classic(base_size=20) + theme(legend.position = "none") + xlab("X") + ylab(expression(paste(Phi))) + coord_cartesian(xlim = c(0,0.5)) + scale_color_manual(values = colorss)
 #ggplot(data_set_3) + geom_point(aes(x=x, y = theta, col = as.factor(apply(estimated_probabilities_3, 1, which.max)), alpha = apply(estimated_probabilities_3, 1, max))) + theme_classic(base_size=20) + theme(legend.position = "none") + xlab("X") + ylab(expression(paste(Phi))) + coord_cartesian(xlim = c(0,0.5)) + scale_color_manual(values = colorss)
 
 data_set_4 = data.frame(x = r_sample_4, theta = theta_sample_4)
-ggplot(data_set_4) + geom_point(aes(x=x, y = theta)) + theme_classic(base_size=20) + xlab("X") + ylab(expression(paste(Phi))) + coord_cartesian(xlim = c(0,0.5))
+ggplot(data_set_4) + geom_point(aes(x=x, y = theta)) + theme_classic(base_size=30) + xlab("X") + ylab(expression(paste(Phi))) + coord_cartesian(xlim = c(0,0.5))
 #ggplot(data_set_4) + geom_point(aes(x=x, y = theta, col = as.factor(apply(estimated_probabilities_4, 1, which.max)))) + theme_classic(base_size=20) + theme(legend.position = "none") + xlab("X") + ylab(expression(paste(Phi))) + coord_cartesian(xlim = c(0,0.5)) + scale_color_manual(values = colorss)
 #ggplot(data_set_4) + geom_point(aes(x=x, y = theta, col = as.factor(apply(estimated_probabilities_4, 1, which.max)), alpha = apply(estimated_probabilities_4, 1, max))) + theme_classic(base_size=20) + theme(legend.position = "none") + xlab("X") + ylab(expression(paste(Phi))) + coord_cartesian(xlim = c(0,0.5)) + scale_color_manual(values = colorss)
 
@@ -117,15 +117,15 @@ simulated_sample_3 = as.matrix(data_set_3)
 simulated_sample_4 = as.matrix(data_set_4)
 
 
-par_est = read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_single_2.csv")[,1]
-estimated_probabilities = find_back_probs(par_est, n_rows, simulated_sample, n_cols)
-estimated_probabilities_2 = find_back_probs(par_est, n_rows, simulated_sample_2, n_cols)
-estimated_probabilities_3 = find_back_probs(par_est, n_rows, simulated_sample_3, n_cols)
-estimated_probabilities_4 = find_back_probs(par_est, n_rows, simulated_sample_4, n_cols)
-# estimated_probabilities = find_back_probs_htlp(par_est, n_rows, simulated_sample, n_cols)
-# estimated_probabilities_2 = find_back_probs_htlp(par_est, n_rows, simulated_sample_2, n_cols)
-# estimated_probabilities_3 = find_back_probs_htlp(par_est, n_rows, simulated_sample_3, n_cols)
-# estimated_probabilities_4 = find_back_probs_htlp(par_est, n_rows, simulated_sample_4, n_cols)
+par_est = read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_single_3_htlp.csv")[,1]
+# estimated_probabilities = find_back_probs(par_est, n_rows, simulated_sample, n_cols)
+# estimated_probabilities_2 = find_back_probs(par_est, n_rows, simulated_sample_2, n_cols)
+# estimated_probabilities_3 = find_back_probs(par_est, n_rows, simulated_sample_3, n_cols)
+# estimated_probabilities_4 = find_back_probs(par_est, n_rows, simulated_sample_4, n_cols)
+estimated_probabilities = find_back_probs_htlp(par_est, n_rows, simulated_sample, n_cols)
+estimated_probabilities_2 = find_back_probs_htlp(par_est, n_rows, simulated_sample_2, n_cols)
+estimated_probabilities_3 = find_back_probs_htlp(par_est, n_rows, simulated_sample_3, n_cols)
+estimated_probabilities_4 = find_back_probs_htlp(par_est, n_rows, simulated_sample_4, n_cols)
 
 
 loglik_new = function(param1, x){

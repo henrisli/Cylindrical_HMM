@@ -33,16 +33,16 @@ estimated_field_cl = matrix(NA, nrow = n_replicates, ncol = n_grid^2)
 estimated_field_EM = matrix(NA, nrow = n_replicates, ncol = n_grid^2)
 start_RMSE = rep(NA, n_replicates)
 
-for (rep_num in 6:n_replicates){
+for (rep_num in 20:n_replicates){
   
   rho = 0.8
   potts_param <- c(rep(0, ncolor), rho)
   
   
-  parameters = rbind(c(2,1,0,0,1), c(2,1,0,0,-1), c(2,0.6,0,1.5,0))
-  # parameters = rbind(c(3,1,0,0.21,0.8), c(5,5,0,0.21,0), c(1,0.8,0,1.7,-0.8))
-  parameters_test_reparam = c(rho, as.vector(parameters)) + runif(16,c(-0.8,-1.5,-1.5,-1.5,-0.6,-0.6,-0.2, -0.7,-0.7,-0.7, 0.01, 0.01, -1.2, -0.99,0.01,-0.5), c(0.2,1.5,1.5,1.5,1,1,1.4, 0.7, 0.7, 0.7, 1.5, 1.5, 1.5, 0.01,0.99,0.5))
-  # parameters_test_reparam = c(rho, as.vector(parameters)) + runif(16,c(-0.5, -0.5,-0.5,-0.5, -0.2,-0.6,-0.4, -0.7,-0.7,-0.7, -0.2,-0.2,-1.2, -0.8,-0.5,-0.15), c(0.5, 0.5,0.5,0.5, 0.2,0.6,0.2, 0.7,0.7,0.7, 1.5,1.5,1, 0.15,0.5,0.8))
+  # parameters = rbind(c(2,1,0,0,1), c(2,1,0,0,-1), c(2,0.6,0,1.5,0))
+  parameters = rbind(c(3,1,0,0.21,0.8), c(5,5,0,0.21,0), c(1,0.8,0,1.7,-0.8))
+  # parameters_test_reparam = c(rho, as.vector(parameters)) + runif(16,c(-0.8,-1.5,-1.5,-1.5,-0.6,-0.6,-0.2, -0.7,-0.7,-0.7, 0.01, 0.01, -1.2, -0.99,0.01,-0.5), c(0.2,1.5,1.5,1.5,1,1,1.4, 0.7, 0.7, 0.7, 1.5, 1.5, 1.5, 0.01,0.99,0.5))
+  parameters_test_reparam = c(rho, as.vector(parameters)) + runif(16,c(-0.8, -0.5,-0.5,-0.5, -0.2,-0.6,-0.4, -0.7,-0.7,-0.7, -0.2,-0.2,-1.2, -0.8,-0.5,-0.15), c(0.2, 0.5,0.5,0.5, 0.2,0.6,0.2, 0.7,0.7,0.7, 1.5,1.5,1, 0.15,0.5,0.8))
   
   test1 = sqrt(mean((parameters_test_reparam-c(rho, as.vector(parameters)))^2))
   test2 = sqrt(mean((parameters_test_reparam-c(rho, as.vector(parameters[c(1,3,2),])))^2))
@@ -222,8 +222,8 @@ for (rep_num in 6:n_replicates){
   print(rep_num)
 }
 
-elapsed_time_1[which(elapsed_time_1>10)] = elapsed_time_1[which(elapsed_time_1>10)]/60
-elapsed_time_cl[which(elapsed_time_cl>20)] = elapsed_time_cl[which(elapsed_time_cl>20)]/60
+# elapsed_time_1[which(elapsed_time_1>10)] = elapsed_time_1[which(elapsed_time_1>10)]/60
+# elapsed_time_cl[which(elapsed_time_cl>20)] = elapsed_time_cl[which(elapsed_time_cl>20)]/60
 mean(elapsed_time_1, na.rm = T)/60
 mean(elapsed_time_cl, na.rm = T)/60
 mean(elapsed_time_EM, na.rm = T)/60

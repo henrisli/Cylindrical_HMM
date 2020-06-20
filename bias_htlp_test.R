@@ -3,7 +3,7 @@ potts_param <- c(rep(0, ncolor), rho)
 
 
 # Case 1: "Hard"
-#parameters = rbind(c(0.25,1,-pi/2,0,0.7), c(0.25,1,pi/2,0,0.7), c(0.5,0.5,0,0.8,0.8))
+# parameters = rbind(c(0.25,1,-pi/2,0,0.7), c(0.25,1,pi/2,0,0.7), c(0.5,0.5,0,0.8,0.8))
 
 # Case 2: "Easy"
 parameters = rbind(c(0.25,1,0,0,0.6), c(0.25,3,0,0,0.6), c(0.25,0.5,0,0,0.2))
@@ -122,10 +122,11 @@ mean(apply(parameter_estimates_1, 1, function(i) sqrt(mean((i-true_parameters)^2
 df = data.frame(y = as.vector(parameter_estimates_1))
 df$x=c(rep(NA,n_replicates),rep(rep(1:3,each=n_replicates),5))
 df$x = as.factor(df$x)
+df$y2 = c(rep(rho,n_replicates), rep(as.vector(parameters), each=n_replicates))
 df$supp = c(rep("rho", n_replicates), rep(c("alpha", "beta", "mu", "tau", "kappa"), each =n_replicates*3))
 
 #pdf(file="C:/Users/henri/Documents/GitHub/Master-Thesis/Images/Case1_02_bias_htlp.pdf")
-ggplot(df, aes(x=supp, y=y, fill=x)) +  geom_boxplot() + labs(fill = "Class") + scale_x_discrete(labels=c(expression(paste(alpha)),expression(paste(beta)),expression(paste(mu)),expression(paste(tau)), expression(paste(kappa)), expression(paste(rho))), limits = c("alpha", "beta", "mu", "tau", "kappa", "rho")) + xlab("Parameter") + ylab("Value") + theme_classic(base_size=20) + coord_cartesian(ylim=c(-2,3.5))
+ggplot(df, aes(x=supp, y=y, fill=x)) +  geom_boxplot() + labs(fill = "Class") + scale_x_discrete(labels=c(expression(paste(alpha)),expression(paste(beta)),expression(paste(mu)),expression(paste(tau)), expression(paste(kappa)), expression(paste(rho))), limits = c("alpha", "beta", "mu", "tau", "kappa", "rho")) + xlab("Parameter") + ylab("Value") + theme_classic(base_size=20) + coord_cartesian(ylim=c(-2,3.5)) + geom_point(position=position_dodge(width = 0.75),aes(group=x,y=y2), shape = 4, size = 2, color = "black")
 #dev.off()
 
 parameter_estimates_1_1_05 = as.matrix(read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_case1_05_htlp.csv"))
