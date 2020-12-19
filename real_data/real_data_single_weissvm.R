@@ -360,9 +360,9 @@ for (i in 1:(n_rows)){
 
 parameters_test_reparam = c(rho_est, as.vector(theta_iter[[1]]))
 
-# parameters_test_reparam[c(2,3,4,5,8,9)] = log(parameters_test_reparam[c(2,3,4,5,8,9)])
-# parameters_test_reparam[c(6,7)] = atan(parameters_test_reparam[c(6,7)]/2)
-# parameters_test_reparam[c(10,11)] = atanh(parameters_test_reparam[c(10,11)])
+parameters_test_reparam[c(2,3,4,5,8,9)] = log(parameters_test_reparam[c(2,3,4,5,8,9)])
+parameters_test_reparam[c(6,7)] = atan(parameters_test_reparam[c(6,7)]/2)
+parameters_test_reparam[c(10,11)] = atanh(parameters_test_reparam[c(10,11)])
 
 # parameters_test_reparam[c(2,3,4,5,6,7,11,12,13)] = log(parameters_test_reparam[c(2,3,4,5,6,7,11,12,13)])
 # parameters_test_reparam[c(8,9,10)] = atan(parameters_test_reparam[c(8,9,10)]/2)
@@ -372,9 +372,9 @@ parameters_test_reparam = c(rho_est, as.vector(theta_iter[[1]]))
 # parameters_test_reparam[c(10,11,12,13)] = atan(parameters_test_reparam[c(10,11,12,13)]/2)
 # parameters_test_reparam[c(18,19,20,21)] = atanh(parameters_test_reparam[c(18,19,20,21)])
 
-parameters_test_reparam[c(2,3,4,5,6,7,8,9,10,11,17,18,19,20,21)] = log(parameters_test_reparam[c(2,3,4,5,6,7,8,9,10,11,17,18,19,20,21)])
-parameters_test_reparam[c(12,13,14,15,16)] = atan(parameters_test_reparam[c(12,13,14,15,1)]/2)
-parameters_test_reparam[c(22,23,24,25,26)] = atanh(parameters_test_reparam[c(22,23,24,25,26)])
+# parameters_test_reparam[c(2,3,4,5,6,7,8,9,10,11,17,18,19,20,21)] = log(parameters_test_reparam[c(2,3,4,5,6,7,8,9,10,11,17,18,19,20,21)])
+# parameters_test_reparam[c(12,13,14,15,16)] = atan(parameters_test_reparam[c(12,13,14,15,1)]/2)
+# parameters_test_reparam[c(22,23,24,25,26)] = atanh(parameters_test_reparam[c(22,23,24,25,26)])
 
 
 init_param = parameters_test_reparam

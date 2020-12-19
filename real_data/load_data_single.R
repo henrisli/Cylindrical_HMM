@@ -117,9 +117,9 @@ simulated_sample_3 = as.matrix(data_set_3)
 simulated_sample_4 = as.matrix(data_set_4)
 
 
-par_est = read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_single_3_htlp.csv")[,1]
-# estimated_probabilities = find_back_probs(par_est, n_rows, simulated_sample, n_cols)
-# estimated_probabilities_2 = find_back_probs(par_est, n_rows, simulated_sample_2, n_cols)
+par_est = read.table("C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_single_3.csv")[,1]
+estimated_probabilities = find_back_probs(par_est, n_rows, simulated_sample, n_cols)
+estimated_probabilities_2 = find_back_probs(par_est, n_rows, simulated_sample_2, n_cols)
 # estimated_probabilities_3 = find_back_probs(par_est, n_rows, simulated_sample_3, n_cols)
 # estimated_probabilities_4 = find_back_probs(par_est, n_rows, simulated_sample_4, n_cols)
 estimated_probabilities = find_back_probs_htlp(par_est, n_rows, simulated_sample, n_cols)

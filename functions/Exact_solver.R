@@ -70,6 +70,8 @@ for (i in 1:(ncolor_test^2)){
   conf_n_3 = c(conf_n_3, rep(seq_n_3[((i-1)*ncolor_test + 1):(ncolor_test*i)], ncolor_test^(n_rows-2)))
 }
 
+# Exact likelihood for m>1
+
 likelihood_exact <- function(parameters_input, n_rows, data_sample, n_cols){
   rho_val = parameters_input[1]
   theta_val = matrix(parameters_input[2:(5*ncolor_test+1)], nrow=ncolor_test)
@@ -185,77 +187,7 @@ neg_likelihood_exact_hess <- function(parameters_input, n_rows, data_sample, n_c
 
 
 
-discrepancy = 3
-#logliks <- rep(NA,n_start)
-#est_params <- matrix(NA, ncol = 1+5*ncolor_test, nrow = n_start)
-#for (i in 14:n_start){
-#parameters_test_reparam = c(runif(1,0,1), as.vector(theta_list[[i]]))
-parameters_test_reparam = c(rho_test, as.vector(parameters[1:ncolor_test,]))
-parameters_test_reparam[c(2,3,4,5,6,7,11,12,13)] = log(parameters_test_reparam[c(2,3,4,5,6,7,11,12,13)])
-parameters_test_reparam[c(8,9,10)] = atan(parameters_test_reparam[c(8,9,10)]/2)
-parameters_test_reparam[c(14,15,16)] = atanh(parameters_test_reparam[c(14,15,16)])
-init_param = parameters_test_reparam
-#init_param = c(runif(1,0,log(1+sqrt(ncolor_test))), runif(ncolor_test*5, parameters_test_reparam[2:(ncolor_test*5+1)]-discrepancy, parameters_test_reparam[2:(ncolor_test*5+1)]+discrepancy))
-#init_param = c(0.8, as.vector(parameters))
-#init_param = c(0.5, as.vector(parameters_test[1:2,]))
-#init_param[c(2,3,4,5,6,7,11,12,13)] = log(init_param[c(2,3,4,5,6,7,11,12,13)])
-#init_param[c(8,9,10)] = tan(init_param[c(8,9,10)]/2)
-#init_param[c(14,15,16)] = atanh(init_param[c(14,15,16)])
-#init_param[c(2,3,4,5,8,9)] = log(init_param[c(2,3,4,5,8,9)])
-#init_param[c(6,7)] = tan(init_param[c(6,7)]/2)
-#init_param[c(10,11)] = atanh(init_param[c(10,11)])
-#likelihood_exact(init_param, n_rows = n_rows, data_sample = simulated_sample_test, n_cols = n_cols)
-#test <- neg_likelihood_exact(init_param, n_rows = n_rows, data_sample = simulated_sample, n_cols = n_cols)
-#if (is.na(test)){next}
-time_test = Sys.time()
-optimal = optim(init_param, neg_likelihood_exact, method = "BFGS", control = list(trace=6, REPORT = 1, reltol = 1e-5), n_rows = n_rows, data_sample = simulated_sample, n_cols = n_cols)
-Sys.time() - time_test
-#est_params[i,] = optimal$par
-#logliks[i] = optimal$value
-#print(i)
-#}
-#optimal = optim(est_params[which.min(logliks),], neg_likelihood_exact, method = "BFGS", control = list(trace=6, REPORT = 1, reltol = 1e-5), n_rows = n_rows, data_sample = simulated_sample, n_cols = n_cols)
-estimated_param = rep(optimal$par[1],1+5*ncolor_test)
-estimated_param[c(2,3,4,5,6,7,11,12,13)] = exp(optimal$par[c(2,3,4,5,6,7,11,12,13)])
-estimated_param[c(8,9,10)] = 2*atan(optimal$par[c(8,9,10)])
-estimated_param[c(14,15,16)] = tanh(optimal$par[c(14,15,16)])
-sqrt(mean((estimated_param-c(0.5,parameters[c(1,2,3),]))^2))
-#estimated_param[c(2,3,4,5,8,9)] = exp(optimal$par[c(2,3,4,5,8,9)])
-#estimated_param[c(6,7)] = 2*atan(optimal$par[c(6,7)])
-#estimated_param[c(10,11)] = tanh(optimal$par[c(10,11)])
-
-estimated_param[1]
-estimated_param = matrix(estimated_param[2:16],nrow=3)
-estimated_param
-parameters_test[1:ncolor_test,]
-
-grad = numDeriv::grad(likelihood_exact, optimal$par, n_rows = n_rows, data_sample = simulated_sample_test, n_cols = n_cols)
-hess = numDeriv::hessian(likelihood_exact, optimal$par, n_rows = n_rows, data_sample = simulated_sample_test, n_cols = n_cols)
-sum(diag(grad%*%t(grad)%*%solve(hess)))
-
-estimated_probabilities = find_back_probs(optimal$par, n_rows, simulated_sample, n_cols)
-estimated_probabilities = estimated_probabilities[,c(2,3,1)]
-
-pdf(file="C:/Users/henri/Documents/GitHub/Master-Thesis/Images/Case2_latent_4.pdf")
-image(matrix(apply(estimated_probabilities,1,which.max),nrow=n_grid), x = 1:24, y = 1:24, xlab = "", ylab = "", col = tim.colors(64))
-dev.off()
-
-
-values = apply(vals, MARGIN= 1, FUN = dabeley, param=estimated_param[1,])
-image.plot(x=X_cor, y = y_cor, z = matrix(values,nrow=100))
-values = apply(vals, MARGIN= 1, FUN = dabeley, param=estimated_param[2,])
-image.plot(x=X_cor, y = y_cor, z = matrix(values,nrow=100))
-values = apply(vals, MARGIN= 1, FUN = dabeley, param=estimated_param[3,])
-values[which(values==Inf)]=0
-image.plot(x=X_cor, y = y_cor, z = matrix(values,nrow=100))
-
-
-ttime = Sys.time()
-likelihood_exact(parameters_test_reparam, n_rows, data_sample, n_cols)
-#likelihood(parameters_test_reparam)
-Sys.time() - ttime
-
-
+# Exact likelihood with m=1
 
 likelihood_exact_1 <- function(parameters_input, n_rows, data_sample, n_cols){
   rho_val = parameters_input[1]

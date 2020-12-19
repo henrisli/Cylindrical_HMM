@@ -15,34 +15,37 @@ full_likelihood_RMSE = function(parameter, data_sample){
   return(-value)
 }
 
-n_replicates = 25
+n_replicates = 50
 
 composite_likelihood<- rep(1000000, n_replicates)
 
 elapsed_time_1 = rep(NA, n_replicates)
+elapsed_time_2 = rep(NA, n_replicates)
 elapsed_time_cl = rep(NA, n_replicates)
 elapsed_time_EM = rep(NA, n_replicates)
 
 parameter_estimates_1 = matrix(NA, nrow = n_replicates, ncol = 16)
+parameter_estimates_2 = matrix(NA, nrow = n_replicates, ncol = 16)
 parameter_estimates_cl = matrix(NA, nrow = n_replicates, ncol = 16)
 parameter_estimates_EM = matrix(NA, nrow = n_replicates, ncol = 16)
 
 true_field = matrix(NA, nrow = n_replicates, ncol = n_grid^2)
 estimated_field_1 = matrix(NA, nrow = n_replicates, ncol = n_grid^2)
+estimated_field_2 = matrix(NA, nrow = n_replicates, ncol = n_grid^2)
 estimated_field_cl = matrix(NA, nrow = n_replicates, ncol = n_grid^2)
 estimated_field_EM = matrix(NA, nrow = n_replicates, ncol = n_grid^2)
 start_RMSE = rep(NA, n_replicates)
 
-for (rep_num in 20:n_replicates){
+for (rep_num in 1:n_replicates){
   
-  rho = 0.8
+  rho = 0.5
   potts_param <- c(rep(0, ncolor), rho)
   
   
-  # parameters = rbind(c(2,1,0,0,1), c(2,1,0,0,-1), c(2,0.6,0,1.5,0))
-  parameters = rbind(c(3,1,0,0.21,0.8), c(5,5,0,0.21,0), c(1,0.8,0,1.7,-0.8))
-  # parameters_test_reparam = c(rho, as.vector(parameters)) + runif(16,c(-0.8,-1.5,-1.5,-1.5,-0.6,-0.6,-0.2, -0.7,-0.7,-0.7, 0.01, 0.01, -1.2, -0.99,0.01,-0.5), c(0.2,1.5,1.5,1.5,1,1,1.4, 0.7, 0.7, 0.7, 1.5, 1.5, 1.5, 0.01,0.99,0.5))
-  parameters_test_reparam = c(rho, as.vector(parameters)) + runif(16,c(-0.8, -0.5,-0.5,-0.5, -0.2,-0.6,-0.4, -0.7,-0.7,-0.7, -0.2,-0.2,-1.2, -0.8,-0.5,-0.15), c(0.2, 0.5,0.5,0.5, 0.2,0.6,0.2, 0.7,0.7,0.7, 1.5,1.5,1, 0.15,0.5,0.8))
+  parameters = rbind(c(2,1,0,0,1), c(2,1,0,0,-1), c(2,0.6,0,1.5,0))
+  # parameters = rbind(c(3,1,0,0.21,0.8), c(5,5,0,0.21,0), c(1,0.8,0,1.7,-0.8))
+  parameters_test_reparam = c(rho, as.vector(parameters)) + runif(16,c(-0.8,-1.5,-1.5,-1.5,-0.6,-0.6,-0.2, -0.7,-0.7,-0.7, 0.01, 0.01, -1.2, -0.99,0.01,-0.5), c(0.2,1.5,1.5,1.5,1,1,1.4, 0.7, 0.7, 0.7, 1.5, 1.5, 1.5, 0.01,0.99,0.5))
+  # parameters_test_reparam = c(rho, as.vector(parameters)) + runif(16,c(-0.8, -0.5,-0.5,-0.5, -0.2,-0.6,-0.4, -0.7,-0.7,-0.7, -0.2,-0.2,-1.2, -0.8,-0.5,-0.15), c(0.2, 0.5,0.5,0.5, 0.2,0.6,0.2, 0.7,0.7,0.7, 1.5,1.5,1, 0.15,0.5,0.8))
   
   test1 = sqrt(mean((parameters_test_reparam-c(rho, as.vector(parameters)))^2))
   test2 = sqrt(mean((parameters_test_reparam-c(rho, as.vector(parameters[c(1,3,2),])))^2))
@@ -123,10 +126,10 @@ for (rep_num in 20:n_replicates){
     
     parameter_estimates_EM[rep_num,2:16] = as.vector(theta_est_new)
     print(full_likelihood(c(opt_rho$par,opt_theta$par)))
-    if(abs(full_likelihood(c(opt_rho$par, opt_theta$par)) - composite_likelihood[rep_num])/(composite_likelihood[rep_num])<1e-5){
-      composite_likelihood[rep_num] = full_likelihood(c(opt_rho$par, opt_theta$par))
+    if(abs(full_likelihood_RMSE(c(opt_rho$par, opt_theta$par), simulated_sample) - composite_likelihood[rep_num])/(composite_likelihood[rep_num])<1e-5){
+      composite_likelihood[rep_num] = full_likelihood_RMSE(c(opt_rho$par, opt_theta$par), simulated_sample)
       conv_exit = T
-      break}else{composite_likelihood[rep_num] = full_likelihood(c(opt_rho$par, opt_theta$par))}
+      break}else{composite_likelihood[rep_num] = full_likelihood_RMSE(c(opt_rho$par, opt_theta$par), simulated_sample)}
     # if(abs(composite_likelihood[[iteration]] - composite_likelihood[[iteration-1]])<10){break}
   }
   if(class(opt_theta)=="list"){
@@ -141,6 +144,7 @@ for (rep_num in 20:n_replicates){
   #init_param = c(runif(1,0,log(1+sqrt(ncolor_test))), runif(ncolor_test*5, parameters_test_reparam[2:(ncolor_test*5+1)]-discrepancy, parameters_test_reparam[2:(ncolor_test*5+1)]+discrepancy))
   
   print(full_likelihood_RMSE(parameters_test_reparam, simulated_sample))
+  print("EM done")
   # Composite likelihood
   ttime = proc.time()
   opt_test = tryCatch(
@@ -177,6 +181,7 @@ for (rep_num in 20:n_replicates){
     }
     estimated_field_cl[rep_num, ] = apply(xi_probs_i,1,which.max)
   }
+  print("CL done")
   # n_rows = 1
   n_rows = 1
   
@@ -219,12 +224,57 @@ for (rep_num in 20:n_replicates){
     estimated_probabilities = find_back_probs(optimal$par, n_rows, simulated_sample, n_cols)
     estimated_field_1[rep_num, ] = apply(estimated_probabilities, 1, which.max)
   }
+  print("1 done")
+  # n_rows = 2
+  n_rows = 2
+  
+  xi_A_n = matrix(1:3, ncol = 1)
+  for (i in 1:(n_rows)){
+    xi_A_n = cbind(rbind(xi_A_n, xi_A_n, xi_A_n), rep(1:3, each = 3^i))
+  }
+  moving_window_summation = matrix(0, nrow = ncolor_test^(n_rows), ncol = ncolor_test)
+  for (j in 1:(ncolor_test^(n_rows))){
+    moving_window_summation[j,] = seq((j-1)%/%(ncolor_test^2)*ncolor_test^2*(ncolor_test-1)+(j), (j-1)%/%(ncolor_test^2)*ncolor_test^2*2+j+ncolor_test^2*(ncolor_test-1), l=ncolor_test)}
+  moving_window_summation = unique(moving_window_summation)
+  seq_n_2 = 1:(ncolor_test^2)
+  seq_n_3 = 1:(ncolor_test^3)
+  conf_n_2 = c()
+  for (i in 1:ncolor_test){
+    conf_n_2 = c(conf_n_2, rep(seq_n_2[((i-1)*ncolor_test + 1):(ncolor_test*i)], ncolor_test^(n_rows-1)))
+  }
+  conf_n_3 = c()
+  for (i in 1:(ncolor_test^2)){
+    conf_n_3 = c(conf_n_3, rep(seq_n_3[((i-1)*ncolor_test + 1):(ncolor_test*i)], ncolor_test^(n_rows-2)))
+  }
+  
+  print(neg_likelihood_exact(parameters_test_reparam, n_rows = n_rows, data_sample = simulated_sample, n_cols = n_cols))
+  ttime = proc.time()
+  optimal = tryCatch(
+    optim(init_param, neg_likelihood_exact, method = "BFGS", control = list(trace=6, REPORT = 1, reltol = 1e-5), n_rows = n_rows, data_sample = simulated_sample, n_cols = n_cols),
+    error = function(e){ 
+      T
+    }, finally = {}
+  )
+  if(class(optimal)=="list"){
+    elapsed_time_2[rep_num] = (proc.time() - ttime)[[3]]
+    
+    estimated_param = rep(optimal$par[1],1+5*ncolor_test)
+    estimated_param[c(2,3,4,5,6,7,11,12,13)] = exp(optimal$par[c(2,3,4,5,6,7,11,12,13)])
+    estimated_param[c(8,9,10)] = 2*atan(optimal$par[c(8,9,10)])
+    estimated_param[c(14,15,16)] = tanh(optimal$par[c(14,15,16)])
+    parameter_estimates_2[rep_num, ] = estimated_param
+    
+    estimated_probabilities = find_back_probs(optimal$par, n_rows, simulated_sample, n_cols)
+    estimated_field_2[rep_num, ] = apply(estimated_probabilities, 1, which.max)
+  }
+  print("2 done")
   print(rep_num)
 }
 
 # elapsed_time_1[which(elapsed_time_1>10)] = elapsed_time_1[which(elapsed_time_1>10)]/60
 # elapsed_time_cl[which(elapsed_time_cl>20)] = elapsed_time_cl[which(elapsed_time_cl>20)]/60
 mean(elapsed_time_1, na.rm = T)/60
+mean(elapsed_time_2, na.rm = T)/60
 mean(elapsed_time_cl, na.rm = T)/60
 mean(elapsed_time_EM, na.rm = T)/60
 
@@ -234,14 +284,16 @@ mean(elapsed_time_EM, na.rm = T)/60
 
 true_parameters = c(rho, as.vector(parameters))
 mean(apply(parameter_estimates_1, 1, function(i) sqrt(mean((i-true_parameters)^2))), na.rm = T)
+mean(apply(parameter_estimates_2, 1, function(i) sqrt(mean((i-true_parameters)^2))), na.rm = T)
 mean(apply(parameter_estimates_cl, 1, function(i) sqrt(mean((i-true_parameters)^2))), na.rm = T)
 mean(apply(parameter_estimates_EM, 1, function(i) sqrt(mean((i-true_parameters)^2))), na.rm = T)
 
 diff_in_est_1 = rep(0,n_replicates)
+diff_in_est_2 = rep(0,n_replicates)
 diff_in_est_cl = rep(0,n_replicates)
 diff_in_est_EM = rep(0,n_replicates)
 
-for (j in 1:n_replicates){
+for (j in 1:33){
   
   test1 = sqrt(mean((parameter_estimates_1[j,]-c(rho, as.vector(parameters)))^2))
   test2 = sqrt(mean((parameter_estimates_1[j,]-c(rho, as.vector(parameters[c(1,3,2),])))^2))
@@ -250,6 +302,14 @@ for (j in 1:n_replicates){
   test5 = sqrt(mean((parameter_estimates_1[j,]-c(rho, as.vector(parameters[c(3,2,1),])))^2))
   test6 = sqrt(mean((parameter_estimates_1[j,]-c(rho, as.vector(parameters[c(3,1,2),])))^2))
   diff_in_est_1[j] = min(test1,test2,test3,test4,test5,test6)
+  
+  test1 = sqrt(mean((parameter_estimates_2[j,]-c(rho, as.vector(parameters)))^2))
+  test2 = sqrt(mean((parameter_estimates_2[j,]-c(rho, as.vector(parameters[c(1,3,2),])))^2))
+  test3 = sqrt(mean((parameter_estimates_2[j,]-c(rho, as.vector(parameters[c(2,3,1),])))^2))
+  test4 = sqrt(mean((parameter_estimates_2[j,]-c(rho, as.vector(parameters[c(2,1,3),])))^2))
+  test5 = sqrt(mean((parameter_estimates_2[j,]-c(rho, as.vector(parameters[c(3,2,1),])))^2))
+  test6 = sqrt(mean((parameter_estimates_2[j,]-c(rho, as.vector(parameters[c(3,1,2),])))^2))
+  diff_in_est_2[j] = min(test1,test2,test3,test4,test5,test6)
   
   test1 = sqrt(mean((parameter_estimates_cl[j,]-c(rho, as.vector(parameters)))^2))
   test2 = sqrt(mean((parameter_estimates_cl[j,]-c(rho, as.vector(parameters[c(1,3,2),])))^2))
@@ -269,5 +329,6 @@ for (j in 1:n_replicates){
 }
 
 length(which(diff_in_est_1<start_RMSE))
+length(which(diff_in_est_2<start_RMSE))
 length(which(diff_in_est_cl<start_RMSE))
 length(which(diff_in_est_EM<start_RMSE))

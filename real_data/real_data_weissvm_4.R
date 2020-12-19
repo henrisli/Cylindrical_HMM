@@ -9,8 +9,8 @@ library(rootSolve)
 
 n_grid = 24
 
-neg_likelihood_exact_real <- function(parameters_input, n_rows, data_sample, data_sample_2, n_cols){
-  return(neg_likelihood_exact(parameters_input, n_rows, data_sample, n_cols) + neg_likelihood_exact(parameters_input, n_rows, data_sample_2, n_cols))
+neg_likelihood_exact_real <- function(parameters_input, n_rows, data_sample, n_cols){
+  return(neg_likelihood_exact(parameters_input, n_rows, data_sample, n_cols))
 }
 
 neg_likelihood_exact_hess_real <- function(parameters_input, n_rows, data_sample, data_sample_2, n_cols){
@@ -67,7 +67,7 @@ optimal = optim(1,loglikelihood, lower = 0, method = "Brent", upper = 2*log(1+sq
 optimal$par
 
 
-ncolor = 3
+ncolor = 2
 
 # Initialize parameters
 
@@ -208,39 +208,27 @@ for (start_point in 1:n_start){
     potts_prob = apply(xi_A, 1, function(i) exp(rho_est*ifelse(i[1]==i[2],1,0)))
     potts_prob = potts_prob/sum(potts_prob)
     xi_probs_i = matrix(0, nrow = n_grid^2, ncol = ncolor)
-    xi_probs_i_2 = matrix(0, nrow = n_grid^2, ncol = ncolor)
     for (i in 1:A){
       for (j in 1:ncolor^2){
         xi_probs[i,j] = potts_prob[j]*dabeley(theta_est[xi_A[j,1],], as.vector(simulated_sample[A_list[[i]][1],]))*dabeley(theta_est[xi_A[j,2],], as.vector(simulated_sample[A_list[[i]][2],]))
       }
       xi_probs[i,] = xi_probs[i,]/sum(xi_probs[i,])
     }
-    for (i in 1:A){
-      for (j in 1:ncolor^2){
-        xi_probs_2[i,j] = potts_prob[j]*dabeley(theta_est[xi_A[j,1],], as.vector(simulated_sample_2[A_list[[i]][1],]))*dabeley(theta_est[xi_A[j,2],], as.vector(simulated_sample_2[A_list[[i]][2],]))
-      }
-      xi_probs_2[i,] = xi_probs_2[i,]/sum(xi_probs_2[i,])
-    }
+
     for (i in 1:A){
       for (j in 1:ncolor^2){
         xi_probs_i[A_list[[i]][1],xi_A[j,1]] = xi_probs_i[A_list[[i]][1],xi_A[j,1]] + xi_probs[i,j]
         xi_probs_i[A_list[[i]][2],xi_A[j,2]] = xi_probs_i[A_list[[i]][2],xi_A[j,2]] + xi_probs[i,j]
       }
     }
-    for (i in 1:A){
-      for (j in 1:ncolor^2){
-        xi_probs_i_2[A_list[[i]][1],xi_A[j,1]] = xi_probs_i_2[A_list[[i]][1],xi_A[j,1]] + xi_probs_2[i,j]
-        xi_probs_i_2[A_list[[i]][2],xi_A[j,2]] = xi_probs_i_2[A_list[[i]][2],xi_A[j,2]] + xi_probs_2[i,j]
-      }
-    }
+
     xi_probs_i_normal = matrix(0, nrow = n_grid^2, ncol = ncolor)
-    xi_probs_i_normal_2 = matrix(0, nrow = n_grid^2, ncol = ncolor)
     for (i in 1:n_grid^2){xi_probs_i_normal[i,] = xi_probs_i[i,]/sum(xi_probs_i[i,])}
-    for (i in 1:n_grid^2){xi_probs_i_normal_2[i,] = xi_probs_i_2[i,]/sum(xi_probs_i_2[i,])}
+    
     iteration = iteration + 1
     if(any(is.na(xi_probs))){break}
-    if(any(is.na(xi_probs_2))){break}
-    opt_rho = optim(rho_est,rho_function_real, xi_probs_est_1 = xi_probs, xi_probs_est_2 = xi_probs_2, method = "L-BFGS-B", lower = 0, upper = log(1+sqrt(ncolor)))
+    
+    opt_rho = optim(rho_est,rho_function, xi_probs_est = xi_probs, method = "L-BFGS-B", lower = 0, upper = log(1+sqrt(ncolor)))
     
     rho_vec[start_point] = opt_rho$par
     theta_est_reparam=theta_est
@@ -249,7 +237,7 @@ for (start_point in 1:n_start){
     theta_est_reparam[,5] = atanh(theta_est_reparam[,5])
     
     opt_theta = tryCatch(
-      optim(as.vector(theta_est_reparam), fn = theta_function_real, method = "BFGS", xi_probs_i_est_and_sample_1 = cbind(xi_probs_i,simulated_sample), xi_probs_i_est_and_sample_2 = cbind(xi_probs_i_2,simulated_sample_2), control = list(reltol = 0.01)),
+      optim(as.vector(theta_est_reparam), fn = theta_function, method = "BFGS", xi_probs_i_est_and_sample = cbind(xi_probs_i,simulated_sample), control = list(reltol = 0.01)),
       error = function(e){ 
         exit = T
       }, finally = {}
@@ -262,10 +250,10 @@ for (start_point in 1:n_start){
     
     theta_list[[start_point]] = theta_est_new
     
-    if(abs(full_likelihood_real(c(opt_rho$par, opt_theta$par), simulated_sample, simulated_sample_2) - composite_likelihood[start_point])/(composite_likelihood[start_point])<0.01){
-      composite_likelihood[start_point] = full_likelihood_real(c(opt_rho$par, opt_theta$par), simulated_sample, simulated_sample_2)
+    if(abs(full_likelihood(c(opt_rho$par, opt_theta$par), simulated_sample) - composite_likelihood[start_point])/(composite_likelihood[start_point])<0.01){
+      composite_likelihood[start_point] = full_likelihood(c(opt_rho$par, opt_theta$par), simulated_sample)
       conv_exit = T
-      break}else{composite_likelihood[start_point] = full_likelihood_real(c(opt_rho$par, opt_theta$par), simulated_sample, simulated_sample_2)}
+      break}else{composite_likelihood[start_point] = full_likelihood(c(opt_rho$par, opt_theta$par), simulated_sample)}
     # if(abs(composite_likelihood[[iteration]] - composite_likelihood[[iteration-1]])<10){break}
   }
   if (conv_exit){
@@ -287,39 +275,28 @@ for (start_point in 1:n_start){
     potts_prob = apply(xi_A, 1, function(i) exp(rho_est*ifelse(i[1]==i[2],1,0)))
     potts_prob = potts_prob/sum(potts_prob)
     xi_probs_i = matrix(0, nrow = n_grid^2, ncol = ncolor)
-    xi_probs_i_2 = matrix(0, nrow = n_grid^2, ncol = ncolor)
     for (i in 1:A){
       for (j in 1:ncolor^2){
         xi_probs[i,j] = potts_prob[j]*dabeley(theta_est[xi_A[j,1],], as.vector(simulated_sample[A_list[[i]][1],]))*dabeley(theta_est[xi_A[j,2],], as.vector(simulated_sample[A_list[[i]][2],]))
       }
       xi_probs[i,] = xi_probs[i,]/sum(xi_probs[i,])
     }
-    for (i in 1:A){
-      for (j in 1:ncolor^2){
-        xi_probs_2[i,j] = potts_prob[j]*dabeley(theta_est[xi_A[j,1],], as.vector(simulated_sample_2[A_list[[i]][1],]))*dabeley(theta_est[xi_A[j,2],], as.vector(simulated_sample_2[A_list[[i]][2],]))
-      }
-      xi_probs_2[i,] = xi_probs_2[i,]/sum(xi_probs_2[i,])
-    }
+
     for (i in 1:A){
       for (j in 1:ncolor^2){
         xi_probs_i[A_list[[i]][1],xi_A[j,1]] = xi_probs_i[A_list[[i]][1],xi_A[j,1]] + xi_probs[i,j]
         xi_probs_i[A_list[[i]][2],xi_A[j,2]] = xi_probs_i[A_list[[i]][2],xi_A[j,2]] + xi_probs[i,j]
       }
     }
-    for (i in 1:A){
-      for (j in 1:ncolor^2){
-        xi_probs_i_2[A_list[[i]][1],xi_A[j,1]] = xi_probs_i_2[A_list[[i]][1],xi_A[j,1]] + xi_probs_2[i,j]
-        xi_probs_i_2[A_list[[i]][2],xi_A[j,2]] = xi_probs_i_2[A_list[[i]][2],xi_A[j,2]] + xi_probs_2[i,j]
-      }
-    }
+
     xi_probs_i_normal = matrix(0, nrow = n_grid^2, ncol = ncolor)
-    xi_probs_i_normal_2 = matrix(0, nrow = n_grid^2, ncol = ncolor)
+    
     for (i in 1:n_grid^2){xi_probs_i_normal[i,] = xi_probs_i[i,]/sum(xi_probs_i[i,])}
-    for (i in 1:n_grid^2){xi_probs_i_normal_2[i,] = xi_probs_i_2[i,]/sum(xi_probs_i_2[i,])}
+    
     iteration = iteration + 1
     if(any(is.na(xi_probs))){break}
-    if(any(is.na(xi_probs_2))){break}
-    opt_rho = optim(rho_est,rho_function_real, xi_probs_est_1 = xi_probs, xi_probs_est_2 = xi_probs_2, method = "L-BFGS-B", lower = 0, upper = log(1+sqrt(ncolor)))
+    
+    opt_rho = optim(rho_est,rho_function, xi_probs_est = xi_probs, method = "L-BFGS-B", lower = 0, upper = log(1+sqrt(ncolor)))
     
     rho_vec[start_point] = opt_rho$par
     theta_est_reparam=theta_est
@@ -327,10 +304,10 @@ for (start_point in 1:n_start){
     theta_est_reparam[,3] = tan(theta_est_reparam[,3]/2)
     theta_est_reparam[,5] = atanh(theta_est_reparam[,5])
     
-    if (theta_function_real(as.vector(theta_est_reparam), xi_probs_i_est_and_sample = cbind(xi_probs_i,simulated_sample), xi_probs_i_est_and_sample_2 = cbind(xi_probs_i_2,simulated_sample_2))!=1e7){break}
+    if (theta_function(as.vector(theta_est_reparam), xi_probs_i_est_and_sample = cbind(xi_probs_i,simulated_sample))!=1e7){break}
     
     opt_theta = tryCatch(
-      optim(as.vector(theta_est_reparam), fn = theta_function_converge_real, method = "BFGS", xi_probs_i_est_and_sample_1 = cbind(xi_probs_i,simulated_sample), xi_probs_i_est_and_sample_2 = cbind(xi_probs_i_2,simulated_sample_2), control = list(reltol = 0.01)),
+      optim(as.vector(theta_est_reparam), fn = theta_function_converge, method = "BFGS", xi_probs_i_est_and_sample = cbind(xi_probs_i,simulated_sample), control = list(reltol = 0.01)),
       error = function(e){ 
         exit = T
       }, finally = {}
@@ -343,10 +320,10 @@ for (start_point in 1:n_start){
     
     theta_list[[start_point]] = theta_est_new
     
-    if(abs(full_likelihood_real(c(opt_rho$par, opt_theta$par), simulated_sample, simulated_sample_2) - composite_likelihood[start_point])/(composite_likelihood[start_point])<0.01){
-      composite_likelihood[start_point] = full_likelihood_real(c(opt_rho$par, opt_theta$par), simulated_sample, simulated_sample_2)
+    if(abs(full_likelihood(c(opt_rho$par, opt_theta$par), simulated_sample) - composite_likelihood[start_point])/(composite_likelihood[start_point])<0.01){
+      composite_likelihood[start_point] = full_likelihood(c(opt_rho$par, opt_theta$par), simulated_sample)
       conv_exit = T
-      break}else{composite_likelihood[start_point] = full_likelihood_real(c(opt_rho$par, opt_theta$par), simulated_sample, simulated_sample_2)}
+      break}else{composite_likelihood[start_point] = full_likelihood(c(opt_rho$par, opt_theta$par), simulated_sample)}
   }
   if (conv_exit){
     theta_list_converged[[converged]] = c(opt_rho$par, opt_theta$par)
@@ -389,17 +366,17 @@ for (i in 1:(n_rows)){
 
 parameters_test_reparam = c(rho_est, as.vector(theta_iter[[1]]))
 
-# parameters_test_reparam[c(2,3,4,5,8,9)] = log(parameters_test_reparam[c(2,3,4,5,8,9)])
-# parameters_test_reparam[c(6,7)] = atan(parameters_test_reparam[c(6,7)]/2)
-# parameters_test_reparam[c(10,11)] = atanh(parameters_test_reparam[c(10,11)])
+parameters_test_reparam[c(2,3,4,5,8,9)] = log(parameters_test_reparam[c(2,3,4,5,8,9)])
+parameters_test_reparam[c(6,7)] = atan(parameters_test_reparam[c(6,7)]/2)
+parameters_test_reparam[c(10,11)] = atanh(parameters_test_reparam[c(10,11)])
 
 # parameters_test_reparam[c(2,3,4,5,6,7,11,12,13)] = log(parameters_test_reparam[c(2,3,4,5,6,7,11,12,13)])
 # parameters_test_reparam[c(8,9,10)] = atan(parameters_test_reparam[c(8,9,10)]/2)
 # parameters_test_reparam[c(14,15,16)] = atanh(parameters_test_reparam[c(14,15,16)])
 
-parameters_test_reparam[c(2,3,4,5,6,7,8,9,14,15,16,17)] = log(parameters_test_reparam[c(2,3,4,5,6,7,8,9,14,15,16,17)])
-parameters_test_reparam[c(10,11,12,13)] = atan(parameters_test_reparam[c(10,11,12,13)]/2)
-parameters_test_reparam[c(18,19,20,21)] = atanh(parameters_test_reparam[c(18,19,20,21)])
+# parameters_test_reparam[c(2,3,4,5,6,7,8,9,14,15,16,17)] = log(parameters_test_reparam[c(2,3,4,5,6,7,8,9,14,15,16,17)])
+# parameters_test_reparam[c(10,11,12,13)] = atan(parameters_test_reparam[c(10,11,12,13)]/2)
+# parameters_test_reparam[c(18,19,20,21)] = atanh(parameters_test_reparam[c(18,19,20,21)])
 
 # parameters_test_reparam[c(2,3,4,5,6,7,8,9,10,11,17,18,19,20,21)] = log(parameters_test_reparam[c(2,3,4,5,6,7,8,9,10,11,17,18,19,20,21)])
 # parameters_test_reparam[c(12,13,14,15,16)] = atan(parameters_test_reparam[c(12,13,14,15,1)]/2)
@@ -408,9 +385,9 @@ parameters_test_reparam[c(18,19,20,21)] = atanh(parameters_test_reparam[c(18,19,
 
 init_param = parameters_test_reparam
 
-optimal = optim(init_param, neg_likelihood_exact_real, method = "BFGS", control = list(trace=6, REPORT = 1, reltol = 1e-5), n_rows = n_rows, data_sample = simulated_sample, data_sample_2 = simulated_sample_2, n_cols = n_cols)
+optimal = optim(init_param, neg_likelihood_exact, method = "BFGS", control = list(trace=6, REPORT = 1, reltol = 1e-5), n_rows = n_rows, data_sample = simulated_sample, n_cols = n_cols)
 
-write.table(optimal$par, "C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_fall_4.csv")
+write.table(optimal$par, "C://Users//henri//Documents//GitHub//Master-Thesis//Data//parameter_estimates_summer_2005_2.csv")
 
 estimated_param = rep(optimal$par[1],1+5*ncolor_test)
 
@@ -418,9 +395,9 @@ estimated_param[c(2,3,4,5,8,9)] = exp(optimal$par[c(2,3,4,5,8,9)])
 estimated_param[c(6,7)] = 2*atan(optimal$par[c(6,7)])
 estimated_param[c(10,11)] = tanh(optimal$par[c(10,11)])
 
-estimated_param[c(2,3,4,5,6,7,11,12,13)] = exp(optimal$par[c(2,3,4,5,6,7,11,12,13)])
-estimated_param[c(8,9,10)] = 2*atan(optimal$par[c(8,9,10)])
-estimated_param[c(14,15,16)] = tanh(optimal$par[c(14,15,16)])
+# estimated_param[c(2,3,4,5,6,7,11,12,13)] = exp(optimal$par[c(2,3,4,5,6,7,11,12,13)])
+# estimated_param[c(8,9,10)] = 2*atan(optimal$par[c(8,9,10)])
+# estimated_param[c(14,15,16)] = tanh(optimal$par[c(14,15,16)])
 
 # estimated_param[c(2,3,4,5,6,7,8,9,14,15,16,17)] = exp(optimal$par[c(2,3,4,5,6,7,8,9,14,15,16,17)])
 # estimated_param[c(10,11,12,13)] = 2*atan(optimal$par[c(10,11,12,13)])
